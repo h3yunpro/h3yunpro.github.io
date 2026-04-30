@@ -1,6 +1,7 @@
-import { webpackBundler } from '@vuepress/bundler-webpack'
+import { viteBundler } from '@vuepress/bundler-vite'
 import { defineUserConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
+import { collections } from './collections'
 
 
 export default defineUserConfig({
@@ -24,7 +25,7 @@ export default defineUserConfig({
     `]
   ],
 
-  bundler: webpackBundler(),
+  bundler: viteBundler(),
   shouldPrefetch: false, // 站点较大，页面数量较多时，不建议启用
 
   pagePatterns: ['**/*.md', '!**/*.snippet.md', '!.vuepress', '!node_modules'],
@@ -45,6 +46,9 @@ export default defineUserConfig({
     //   creation: 'original', // 创作方式
     // },
 
+    /* 开启llm */
+    llmstxt: true,
+
     /* 页内信息 */
     editLink: false,
     lastUpdated: {
@@ -56,19 +60,20 @@ export default defineUserConfig({
     contributors: true,
     changelog: false,
 
+    collections: collections,
     /**
      * 博客
      * @see https://theme-plume.vuejs.press/config/basic/#blog
      */
     // blog: false, // 禁用博客
-    blog: {
-      postList: true, // 是否启用文章列表页
-      tags: true, // 是否启用标签页
-      archives: true, // 是否启用归档页
-      categories: true, // 是否启用分类页
-      postCover: 'right', // 文章封面位置
-      pagination: 15, // 每页显示文章数量
-    },
+    // blog: {
+    //   postList: true, // 是否启用文章列表页
+    //   tags: true, // 是否启用标签页
+    //   archives: true, // 是否启用归档页
+    //   categories: true, // 是否启用分类页
+    //   postCover: 'right', // 文章封面位置
+    //   pagination: 15, // 每页显示文章数量
+    // },
 
     markdown: {
       // codeTree: true,// 启用代码树

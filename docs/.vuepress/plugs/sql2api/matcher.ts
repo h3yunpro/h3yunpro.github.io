@@ -1,4 +1,4 @@
 export class Matcher {
-    Type: string
-    Matchers: object[]
-};
+    Type: string = '';
+    Matchers: object[] = [];
+}

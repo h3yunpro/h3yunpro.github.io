@@ -1,5 +1,4 @@
-
-export const exampleSQL = `SELECT *
+SELECT *
 FROM i_D202501xxyyzz
 WHERE CreatedTime > '2025-01-01 15:39:20' AND ModifiedTime >= '2025-01-31'
 	AND Status = 1
@@ -11,4 +10,4 @@ WHERE CreatedTime > '2025-01-01 15:39:20' AND ModifiedTime >= '2025-01-31'
 		OR F0000009 NOT LIKE '%ZC'
 		OR F0000010 LIKE 'DC%')
 ORDER BY CreatedTime DESC
-LIMIT 0, 500`;
+LIMIT 0, 500

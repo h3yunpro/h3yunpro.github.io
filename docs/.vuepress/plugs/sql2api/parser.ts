@@ -40,23 +40,42 @@ function generateApiRequest(select: Select) {
 
 //获取表名
 function getTableName(select: Select) {
-    if (!select.from || !select.from[0]) {
+    if (!select.from) {
         throw new Error('请先输入要转换的SELECT语句');
     }
 
-    const table = select.from[0].table;
-    if (typeof table !== 'string' || table.length === 0) {
-        throw new Error('表名不能为空');
+    // 检查 from 是否为数组
+    let firstFromItem;
+    if (Array.isArray(select.from)) {
+        if (select.from.length === 0) {
+            throw new Error('请先输入要转换的SELECT语句');
+        }
+        firstFromItem = select.from[0];
+    } else {
+        // 如果是 TableExpr 类型（子查询等情况），LoadBizObjects 不支持
+        throw new Error('LoadBizObjects不支持子查询作为数据源');
     }
-    //正则判断表名是否以H_或h_开头
-    if (/^(H_|h_)/.test(table)) {
-        throw new Error('h_开头的是系统表, LoadBizObjects不支持查询系统表');
+
+    // 检查 firstFromItem 是否有 table 属性（BaseFrom 或 Join 类型）
+    if ('table' in firstFromItem && typeof firstFromItem.table === 'string') {
+        const table = firstFromItem.table;
+        if (table.length === 0) {
+            throw new Error('表名不能为空');
+        }
+        //正则判断表名是否以H_或h_开头
+        if (/^(H_|h_)/.test(table)) {
+            throw new Error('h_开头的是系统表, LoadBizObjects不支持查询系统表');
+        }
+        //正则判断表名是否以I_或i_开头
+        if (!/^(I_|i_)/.test(table)) {
+            throw new Error('表名有误, 氚云表单数据表必须是i_开头');
+        }
+        return table.substring(2);
+    } else if ('type' in firstFromItem && firstFromItem.type === 'dual') {
+        throw new Error('LoadBizObjects不支持DUAL表');
+    } else {
+        throw new Error('表名不能为空或不支持的表类型');
     }
-    //正则判断表名是否以I_或i_开头
-    if (!/^(I_|i_)/.test(table)) {
-        throw new Error('表名有误, 氚云表单数据表必须是i_开头');
-    }
-    return table.substring(2);
 }
 
 //获取limit
@@ -194,7 +213,7 @@ function convertToMatcher(item: Binary, matcher: Matcher) {
             matcher.Matchers.push({
                 'Type': 'Item',
                 'Name': (item.left as ColumnRefItem).column,
-                'Operator': OperatorType[operator],
+                'Operator': OperatorType[operator as keyof typeof OperatorType],
                 'Value': (item.right as Value).value
             });
             return;

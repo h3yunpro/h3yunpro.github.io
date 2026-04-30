@@ -1,8 +1,10 @@
-import { defineNoteConfig, defineNotesConfig } from 'vuepress-theme-plume'
+import { defineCollections, defineCollection } from 'vuepress-theme-plume'
 
-const docsNote = defineNoteConfig({
+const docsNote = defineCollection({
+  type: 'doc',
+  title: '文档',
   dir: 'docs',
-  link: '/docs/',
+  linkPrefix: '/docs/',
   sidebar: [{
     text: '基础',
     prefix: '/',
@@ -92,8 +94,11 @@ const docsNote = defineNoteConfig({
   }]
 })
 
-export const notes = defineNotesConfig({
-  dir: 'notes',
-  link: '/',
-  notes: [docsNote],
+const blogNote = defineCollection({
+  type: 'post',
+  title: '博客',
+  dir: 'blog',
+  linkPrefix: '/blog/',
 })
+
+export const collections = defineCollections([docsNote, blogNote])

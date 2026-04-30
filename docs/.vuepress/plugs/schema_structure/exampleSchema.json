@@ -1,0 +1,62 @@
+{
+    "Successful": true,
+    "ErrorMessage": null,
+    "Detail": null,
+    "Logined": true,
+    "ReturnData": {
+        "SheetCode": "SchemaCode001",
+        "AppCode": "AppCode001",
+        "DevCode": "DevCode001",
+        "EngineCode": "EngineCode001",
+        "ParentCode": "ParentCode001",
+        "SheetName": "示例表单",
+        "AppName": "示例应用",
+        "IsDevMode": true,
+        "IsBoSheet": true,
+        "FunctionNodeType": 210,
+        "DisplaySetting": 1,
+        "SingletonModule": false,
+        "SheetControlLimit": 62500,
+        "Summary": null,
+        "DesignModeContent": "[{\"Key\":\"layout-row-1\",\"ParentKey\":\"\",\"Options\":{\"Layout\":\"threeCols\",\"PercentageBlock\":\"threeCols-111\",\"DisplayName\":\"一行多列\"},\"Type\":102,\"TabGroupKey\":null,\"ChildControls\":[{\"Key\":\"CustomerName\",\"ParentKey\":\"layout-row-1\",\"Options\":{\"DataField\":\"CustomerName\",\"DisplayName\":\"客户名称\",\"Description\":\"\",\"ControlKey\":\"FormTextBox\",\"Width\":\"100%\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"请输入客户名称\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"TransferItems\":\"FormTextBox\",\"Mode\":\"Normal\",\"InputByScan\":false,\"ScanUpdateEnable\":false,\"NoRepeat\":false,\"NoRepeatRange\":0,\"NoRepeatTipMessage\":\"不允许重复录入信息。\"},\"Type\":1,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"ContactPhone\",\"ParentKey\":\"layout-row-1\",\"Options\":{\"DataField\":\"ContactPhone\",\"DisplayName\":\"联系电话\",\"Description\":\"\",\"ControlKey\":\"FormTextBox\",\"Width\":\"100%\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"请输入联系电话\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"TransferItems\":\"FormTextBox\",\"Mode\":\"Normal\",\"InputByScan\":false,\"ScanUpdateEnable\":false,\"NoRepeat\":false,\"NoRepeatRange\":0,\"NoRepeatTipMessage\":\"不允许重复录入信息。\"},\"Type\":1,\"TabGroupKey\":null,\"ChildControls\":null},null]},{\"Key\":\"desc-section\",\"ParentKey\":\"\",\"Options\":{\"DisplayName\":\"描述说明\",\"Content\":\"<p><span style=\\\"font-weight: bold;\\\">备注：</span>这是一个示例表单，用于演示表单结构解析工具的功能</p>\",\"DisplayRule\":{},\"ControlKey\":\"FormDescription\"},\"Type\":103,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails\",\"ParentKey\":\"\",\"Options\":{\"DataField\":\"OrderDetails\",\"DisplayName\":\"订单明细\",\"Description\":\"\",\"ControlKey\":\"FormGridView\",\"NameItems\":\"OrderDetails.ProductID\",\"DisplayRule\":{\"Rule\":\"\",\"RuleText\":\"\"},\"GridViewMode\":\"\",\"GridViewFields\":\"\",\"DisplayFields\":[],\"FixedColNum\":2,\"ShowFixedCol\":true,\"MobileGridViewMode\":\"0\",\"IsChangeNameItem\":false},\"Type\":104,\"TabGroupKey\":null,\"ChildControls\":[{\"Key\":\"OrderDetails.ProductID\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.ProductID\",\"DisplayName\":\"产品编号\",\"Description\":\"\",\"ControlKey\":\"FormTextBox\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"TransferItems\":\"FormTextBox\",\"Mode\":\"Normal\",\"InputByScan\":false,\"ScanUpdateEnable\":false,\"NoRepeat\":false,\"NoRepeatRange\":0,\"NoRepeatTipMessage\":\"不允许重复录入信息。\"},\"Type\":1,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.ProductName\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.ProductName\",\"DisplayName\":\"产品名称\",\"Description\":\"\",\"ControlKey\":\"FormTextBox\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"TransferItems\":\"FormTextBox\",\"Mode\":\"Normal\",\"InputByScan\":false,\"ScanUpdateEnable\":false,\"NoRepeat\":false,\"NoRepeatRange\":0,\"NoRepeatTipMessage\":\"不允许重复录入信息。\"},\"Type\":1,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.Specification\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.Specification\",\"DisplayName\":\"规格型号\",\"Description\":\"\",\"ControlKey\":\"FormTextBox\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"TransferItems\":\"FormTextBox\",\"Mode\":\"Normal\",\"InputByScan\":false,\"ScanUpdateEnable\":false,\"NoRepeat\":false,\"NoRepeatRange\":0,\"NoRepeatTipMessage\":\"不允许重复录入信息。\"},\"Type\":1,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.Quantity\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.Quantity\",\"DisplayName\":\"数量\",\"Description\":\"\",\"ControlKey\":\"FormNumber\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"DecimalPlaces\":2,\"ShowMode\":\"1\",\"Percentage\":false,\"ShowBarChart\":false,\"DataFormatType\":\"0\"},\"Type\":4,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.UnitPrice\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.UnitPrice\",\"DisplayName\":\"单价\",\"Description\":\"\",\"ControlKey\":\"FormNumber\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"DecimalPlaces\":2,\"ShowMode\":\"1\",\"Percentage\":false,\"ShowBarChart\":false,\"DataFormatType\":\"0\"},\"Type\":4,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.TotalAmount\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.TotalAmount\",\"DisplayName\":\"金额\",\"Description\":\"\",\"ControlKey\":\"FormNumber\",\"DisplayRule\":{\"Rule\":\" TRUE \"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"{OrderDetails.Quantity}*{OrderDetails.UnitPrice}\"},\"DefaultValueRuleType\":2,\"DecimalPlaces\":2,\"ShowMode\":\"1\",\"Percentage\":false,\"ShowBarChart\":false,\"DataFormatType\":\"0\"},\"Type\":4,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderDetails.Remarks\",\"ParentKey\":\"OrderDetails\",\"Options\":{\"DataField\":\"OrderDetails.Remarks\",\"DisplayName\":\"备注\",\"Description\":\"\",\"ControlKey\":\"FormTextArea\",\"DisplayRule\":{\"Rule\":\"\"},\"PlaceHolder\":\"\",\"ComputationRule\":{\"Rule\":\"\"},\"DefaultValueRuleType\":2,\"Rows\":\"1\",\"OpenRichText\":false},\"Type\":2,\"TabGroupKey\":null,\"ChildControls\":null}]},{\"Key\":\"summary-section\",\"ParentKey\":\"\",\"Options\":{\"DisplayName\":\"分组标题\",\"Title\":\"汇总信息\",\"Alignment\":\"center\"},\"Type\":101,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"layout-row-2\",\"ParentKey\":\"\",\"Options\":{\"Layout\":\"threeCols\",\"PercentageBlock\":\"threeCols-111\",\"DisplayName\":\"一行多列\"},\"Type\":102,\"TabGroupKey\":null,\"ChildControls\":[{\"Key\":\"TotalQuantity\",\"ParentKey\":\"layout-row-2\",\"Options\":{\"DataField\":\"TotalQuantity\",\"DisplayName\":\"总数量\",\"Description\":\"\",\"ControlKey\":\"FormFormula\",\"DisplayRule\":{\"Rule\":\"\"},\"ComputationRule\":{\"Rule\":\"SUM({OrderDetails.Quantity})\"},\"BindType\":\"Number\",\"DecimalPlaces\":2,\"DateTimeMode\":\"yyyy-mm-dd hh:mm\",\"ShowMode\":1,\"Referenceable\":true},\"Type\":304,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"TotalAmount\",\"ParentKey\":\"layout-row-2\",\"Options\":{\"DataField\":\"TotalAmount\",\"DisplayName\":\"总金额\",\"Description\":\"\",\"ControlKey\":\"FormFormula\",\"DisplayRule\":{\"Rule\":\"\"},\"ComputationRule\":{\"Rule\":\"SUM({OrderDetails.TotalAmount})\"},\"BindType\":\"Number\",\"DecimalPlaces\":2,\"DateTimeMode\":\"yyyy-mm-dd hh:mm\",\"ShowMode\":1,\"Referenceable\":true},\"Type\":304,\"TabGroupKey\":null,\"ChildControls\":null},{\"Key\":\"OrderStatus\",\"ParentKey\":\"layout-row-2\",\"Options\":{\"DataField\":\"OrderStatus\",\"DisplayName\":\"订单状态\",\"Description\":\"\",\"ControlKey\":\"FormDropDownList\",\"DisplayRule\":{\"Rule\":\"\"},\"TransferItems\":\"FormDropDownList\",\"SelectShowMode\":\"0\",\"DefaultItems\":[\"待处理\",\"处理中\",\"已完成\",\"已取消\"],\"DefaultValue\":\"待处理\",\"ColorSwitch\":true},\"Type\":7,\"TabGroupKey\":null,\"ChildControls\":null}]}]",
+        "EnableFormSNS": true,
+        "EnableTask": false,
+        "EnableLog": false,
+        "PCLayout": 1,
+        "PublishedCheckboxProperties": [
+            "OrderDetails.Remarks"
+        ],
+        "InstalledFields": [],
+        "IsInstalled": false,
+        "Removable": true,
+        "UnRemovableProperties": [],
+        "IsWorkflow": true,
+        "NameSchema": "{CustomerName}",
+        "Icon": "icon-Example_001",
+        "Published": true,
+        "EnableDataAcl": true,
+        "NodeType": 210,
+        "AppSource": 1,
+        "BindServer": false,
+        "UsageType": 3,
+        "NullSeqNoItemCount": 0,
+        "MobileLayout": 1,
+        "RollupSettingsMap": {},
+        "PCLayoutConfig": {
+            "LayoutType": 1,
+            "TitleFontWeight": 400,
+            "TitleWidth": 84,
+            "TitleAlign": "left",
+            "BorderShow": false
+        },
+        "MobileLayoutConfig": {
+            "LayoutType": 1,
+            "TitleFontWeight": 400,
+            "TitleWidth": 80,
+            "TitleAlign": "left",
+            "BorderShow": false
+        },
+        "ControlSettings": []
+    },
+    "DataType": 0
+}

@@ -1,0 +1,157 @@
+/**
+ * 工具箱通用样式
+ * 用于统一所有工具的视觉风格
+ */
+
+// 主容器
+.tool-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+
+  h2 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  h3 {
+    color: #444;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+}
+
+// 输入区域
+.input-section {
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #42b983;
+      box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+    }
+  }
+
+  .textarea-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+    resize: vertical;
+
+    &:focus {
+      outline: none;
+      border-color: #42b983;
+      box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+    }
+  }
+}
+
+// 按钮组
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  // 主要操作按钮（绿色）
+  .primary-btn {
+    background-color: #42b983;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #369970;
+    }
+  }
+
+  // 次要操作按钮（蓝色）
+  .secondary-btn {
+    background-color: #3498db;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+  }
+
+  // 警告按钮（橙色）
+  .warning-btn {
+    background-color: #e67e22;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #d35400;
+    }
+  }
+
+  // 成功状态按钮
+  .success-btn {
+    background-color: #1e7e34;
+    color: white;
+  }
+}
+
+// 错误提示
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 4px solid #c33;
+  margin: 15px 0;
+}
+
+// 结果区域
+.result-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+
+  .result-content {
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+}
