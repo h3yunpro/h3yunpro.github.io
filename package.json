@@ -5,7 +5,7 @@
   "description": "氚云专业版开发者扩展文档",
   "license": "CC-BY-4.0",
   "engines": {
-    "node": "^20.19.0 || >=22.0.0"
+    "node": "^20.19.0 || >=22.0.0 || >=24.0.0"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",

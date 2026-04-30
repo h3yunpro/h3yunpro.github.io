@@ -24,12 +24,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           # 选择要使用的 node 版本
-          node-version: 20
+          node-version: 24
 
       # 安装依赖
       # Install dependencies
       - name: Install Dependencies
-        run: npm i sass-embedded-linux-x64 -D & npm ci
+        run: npm ci
 
 
       # 运行构建脚本
