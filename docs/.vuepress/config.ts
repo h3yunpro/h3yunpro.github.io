@@ -3,6 +3,7 @@ import { defineUserConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 import { collections } from './collections'
 
+const doc_domain = 'https://h3yunpro.github.io';
 
 export default defineUserConfig({
   base: '/',
@@ -31,7 +32,7 @@ export default defineUserConfig({
   pagePatterns: ['**/*.md', '!**/*.snippet.md', '!.vuepress', '!node_modules'],
   theme: plumeTheme({
     /* 添加您的部署域名, 有助于 SEO, 生成 sitemap */
-    hostname: 'https://h3yunpro.github.io/',
+    hostname: doc_domain,
 
     /* 文档仓库配置，用于 editLink */
     docsRepo: 'https://github.com/h3yunpro/h3yunpro.github.io.git',
@@ -47,7 +48,19 @@ export default defineUserConfig({
     // },
 
     /* 开启llm */
-    llmstxt: true,
+    llmstxt: {
+      llmsTxt: true, // 是否生成 llms.txt 文件（包含各部分链接的索引文件）
+      llmsFullTxt: true, // 是否生成 llms-full.txt 文件（包含所有文档内容的单一合并文件）
+      llmsPageTxt: true, // 是否为网站的每个页面生成对 LLM 友好的 Markdown 版本
+      stripHTML: true, // 是否从生成的 Markdown 文件中剥离 HTML 标签，以确保 LLM 输入更干净
+      filter: (page) => {
+        if (page.path.includes('/article/')) {
+          return false;
+        }
+        return true;
+      },
+      domain: doc_domain,
+    },
 
     /* 页内信息 */
     editLink: false,
