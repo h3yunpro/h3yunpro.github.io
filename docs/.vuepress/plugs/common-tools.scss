@@ -7,7 +7,7 @@
 .tool-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 10px 20px;
+  padding: 0 20px;
 
   h2 {
     color: #333;
@@ -24,7 +24,25 @@
 
 // 输入区域
 .input-section {
-  margin-bottom: 15px;
+  margin-bottom: 0;
+
+  .input-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    label {
+      margin-bottom: 0;
+      font-weight: bold;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    .button-group {
+      margin: 0;
+    }
+  }
 
   label {
     display: block;
@@ -69,14 +87,15 @@
 // 按钮组
 .button-group {
   display: flex;
-  gap: 10px;
-  margin: 20px 0;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  justify-content: flex-end;
 
   button {
-    padding: 10px 20px;
+    padding: 6px 14px;
     border: none;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.3s ease;
 
@@ -133,16 +152,68 @@
   margin: 15px 0;
 }
 
+// 输出头部（标题和按钮同一行）
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  .output-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    h3 {
+      margin: 0;
+      color: #555;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .file-name {
+      font-size: 13px;
+      color: #666;
+      background-color: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+
+      &:hover {
+        background-color: #e0e0e0;
+        color: #42b983;
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      .copy-hint {
+        color: #42b983;
+        font-weight: bold;
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .button-group {
+    margin: 0;
+  }
+}
+
 // 结果区域
 .result-section {
-  margin-top: 30px;
-  padding: 20px;
+  padding: 10px;
   background-color: #f8f8f8;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
 
   .result-content {
     background-color: #fff;
+    margin: 0;
     padding: 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -154,4 +225,50 @@
     max-height: 500px;
     overflow-y: auto;
   }
+}
+
+// Tab 页样式
+.tab-container {
+  margin-top: 0;
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 0;
+}
+
+.tab-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  margin-right: 2px;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #e8e8e8;
+    color: #333;
+  }
+
+  &.active {
+    background-color: #fff;
+    color: #42b983;
+    border-bottom: 2px solid #fff;
+    margin-bottom: -2px;
+    font-weight: bold;
+  }
+}
+
+.tab-content {
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  padding-top: 15px;
+  background-color: #fff;
+  border-radius: 0 0 4px 4px;
+  min-height: 300px;
 }

@@ -1,31 +1,68 @@
 <template>
   <div class="tool-container">
-    <div class="input-section">
-      <label for="jsonInput">请粘贴表单结构 JSON：</label>
-      <textarea 
-        id="jsonInput" 
-        v-model="jsonInput" 
-        placeholder="请粘贴表单结构 JSON 内容..."
-        rows="15"
-        class="textarea-field"
-      ></textarea>
-    </div>
+    <div class="tab-container">
+      <!-- Tab 头部 -->
+      <div class="tab-header">
+        <div 
+          class="tab-item" 
+          :class="{ active: activeTab === 'input' }"
+          @click="activeTab = 'input'"
+        >
+          输入
+        </div>
+        <div 
+          class="tab-item" 
+          :class="{ active: activeTab === 'output' }"
+          @click="activeTab = 'output'"
+        >
+          输出
+        </div>
+      </div>
 
-    <div class="button-group">
-      <button @click="parseJSON" class="primary-btn">解析 JSON</button>
-      <button @click="copyResult" class="secondary-btn" :class="{ 'success-btn': copyStatus }" :disabled="!result || copyStatus">
-        {{ copyStatus ? "√复制成功" : "复制结果" }}
-      </button>
-      <button @click="downloadResult" class="warning-btn" :disabled="!result">下载文件</button>
-    </div>
+      <!-- Tab 内容 -->
+      <div class="tab-content">
+        <!-- 输入 Tab -->
+        <div v-if="activeTab === 'input'" class="input-section">
+          <div class="input-header">
+            <label for="jsonInput">请粘贴表单结构 JSON：</label>
+            <div class="button-group">
+              <button @click="parseJSON" class="primary-btn">解析 JSON</button>
+            </div>
+          </div>
+          <textarea 
+            id="jsonInput" 
+            v-model="jsonInput" 
+            placeholder="请粘贴表单结构 JSON 内容..."
+            rows="15"
+            class="textarea-field"
+          ></textarea>
+        </div>
 
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <div v-if="result" class="result-section">
-      <h3>解析结果：</h3>
-      <pre class="result-content">{{ result }}</pre>
+        <!-- 输出 Tab -->
+        <div v-if="activeTab === 'output'">
+          <div class="output-header">
+            <div class="output-title">
+              <h3>解析结果：</h3>
+              <span v-if="fileName" class="file-name" @click="copyFileName" :title="'点击复制文件名'">
+                {{ fileName }}_字段表.md
+                <span v-if="copyFileNameStatus" class="copy-hint">√</span>
+              </span>
+            </div>
+            <div class="button-group">
+              <button @click="copyResult" class="secondary-btn" :class="{ 'success-btn': copyStatus }" :disabled="!result || copyStatus">
+                {{ copyStatus ? "√复制成功" : "复制结果" }}
+              </button>
+              <button @click="downloadResult" class="warning-btn" :disabled="!result">下载文件</button>
+            </div>
+          </div>
+          <div class="result-section">
+            <div v-if="error" class="error-message">
+              {{ error }}
+            </div>
+            <pre v-else class="result-content">{{ result }}</pre>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -40,6 +77,9 @@ const jsonInput = ref('')
 const result = ref('')
 const error = ref('')
 const copyStatus = ref(false)
+const activeTab = ref<'input' | 'output'>('input')
+const fileName = ref('')
+const copyFileNameStatus = ref(false)
 
 // 页面加载时填充示例数据
 onMounted(() => {
@@ -52,17 +92,44 @@ onMounted(() => {
 function parseJSON(): void {
   error.value = ''
   result.value = ''
+  fileName.value = ''
 
   // 验证输入
   if (!jsonInput.value.trim()) {
     error.value = '请粘贴 JSON 内容'
+    // 验证失败时也切换到输出 Tab
+    activeTab.value = 'output'
     return
   }
 
   try {
     result.value = parseSchemaJSON(jsonInput.value)
+    // 提取文件名
+    fileName.value = extractSchemaNameFromResult(result.value)
+    // 解析成功后自动切换到输出 Tab
+    activeTab.value = 'output'
   } catch (e) {
     error.value = e instanceof Error ? e.message : '未知错误'
+    // 发生错误时也切换到输出 Tab
+    activeTab.value = 'output'
+  }
+}
+
+/**
+ * 复制文件名到剪贴板
+ */
+function copyFileName(): void {
+  if (!fileName.value || copyFileNameStatus.value) {
+    return
+  }
+
+  const fullFileName = `${fileName.value}_字段表.md`
+  const r = copy(fullFileName)
+  if (r) {
+    copyFileNameStatus.value = true
+    setTimeout(() => {
+      copyFileNameStatus.value = false
+    }, 2000)
   }
 }
 
@@ -95,7 +162,7 @@ function downloadResult(): void {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `${schemaName}_字段表.txt`
+  link.download = `${schemaName}_字段表.md`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)

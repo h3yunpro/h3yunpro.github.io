@@ -1,36 +1,67 @@
 <template>
     <div class="tool-container">
-        <div class="input-section">
-            <label for="sqlInput">请输入要转换的SELECT语句：</label>
-            <textarea 
-                id="sqlInput"
-                placeholder="请在此处输入要转换的SELECT语句..." 
-                v-model="sql"
-                rows="10"
-                class="textarea-field"
-            ></textarea>
-        </div>
+        <div class="tab-container">
+            <!-- Tab 头部 -->
+            <div class="tab-header">
+                <div 
+                    class="tab-item" 
+                    :class="{ active: activeTab === 'input' }"
+                    @click="activeTab = 'input'"
+                >
+                    输入
+                </div>
+                <div 
+                    class="tab-item" 
+                    :class="{ active: activeTab === 'output' }"
+                    @click="activeTab = 'output'"
+                >
+                    输出
+                </div>
+            </div>
 
-        <div class="button-group">
-            <button @click="generate" class="primary-btn">生成LoadBizObjects接口请求JSON</button>
-            <button class="secondary-btn" :class="{ 'success-btn': copyStatus }" @click="copyResult" :disabled="!outputContent || copyStatus">
-                {{ copyStatus ? "√复制成功" : "点我复制结果" }}
-            </button>
-        </div>
+            <!-- Tab 内容 -->
+            <div class="tab-content">
+                <!-- 输入 Tab -->
+                <div v-if="activeTab === 'input'" class="input-section">
+                    <div class="input-header">
+                        <label for="sqlInput">请输入要转换的SELECT语句：</label>
+                        <div class="button-group">
+                            <button @click="generate" class="primary-btn">生成LoadBizObjects接口请求JSON</button>
+                        </div>
+                    </div>
+                    <textarea 
+                        id="sqlInput"
+                        placeholder="请在此处输入要转换的SELECT语句..." 
+                        v-model="sql"
+                        rows="10"
+                        class="textarea-field"
+                    ></textarea>
+                </div>
 
-        <div v-if="outputError" class="error-message">
-            {{ outputContent }}
-        </div>
-
-        <div v-if="outputContent && !outputError" class="result-section">
-            <h3>输出区域：</h3>
-            <pre class="result-content">{{ outputContent }}</pre>
+                <!-- 输出 Tab -->
+                <div v-if="activeTab === 'output'">
+                    <div class="output-header">
+                        <h3>生成结果：</h3>
+                        <div class="button-group">
+                            <button class="secondary-btn" :class="{ 'success-btn': copyStatus }" @click="copyResult" :disabled="!outputContent || copyStatus">
+                                {{ copyStatus ? "√复制成功" : "点我复制结果" }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="result-section">
+                        <div v-if="outputError" class="error-message">
+                            {{ outputContent }}
+                        </div>
+                        <pre v-else class="result-content">{{ outputContent }}</pre>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { AST, Parser, Select } from 'node-sql-parser';
 import copy from 'copy-to-clipboard';
 
@@ -42,6 +73,7 @@ const sql = ref(exampleSQL);
 const outputContent = ref('');
 const outputError = ref(false);
 const copyStatus = ref(false);
+const activeTab = ref<'input' | 'output'>('input');
 
 function generate() {
     try {
@@ -72,9 +104,13 @@ function generate() {
         const result = generateApiRequest(select); // 生成API请求JSON
         outputContent.value = JSON.stringify(result, null, 2);
         outputError.value = false;
+        // 生成成功后自动切换到输出 Tab
+        activeTab.value = 'output';
     } catch (Error: unknown) {
         outputContent.value = (Error as Error).message;
         outputError.value = true;
+        // 发生错误时也切换到输出 Tab
+        activeTab.value = 'output';
     }
 }
 
