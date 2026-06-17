@@ -15,6 +15,7 @@ const docsNote = defineCollection({
       '/docs/dev-tools/',
       '/docs/noun/',
       '/docs/check-code/',
+      '/docs/action-code/',
       '/docs/form-events/',
       '/docs/list-events/'
     ]
