@@ -114,6 +114,28 @@ OnValidate: function( actionControl ) {
 },
 ```
 
+5. 仅在发起提交时执行校验：
+
+```Submit``` 按钮同时用于发起提交和审批同意。若校验只需要由发起人执行，需同时判断新增、草稿和发起节点，避免审批人点击同意时重复触发。
+
+``` js
+// 提交校验
+OnValidate: function( actionControl ) {
+
+    if( actionControl.Action == "Submit" && (
+        $.SmartForm.ResponseContext.IsCreateMode || //新增
+        $.SmartForm.ResponseContext.BizObjectStatus == 0 || //打开草稿数据
+        $.SmartForm.ResponseContext.ActivityCode == "Activity2" //发起节点
+    ) ) {
+        //仅在发起提交时执行的校验逻辑
+    }
+
+    return true;
+},
+```
+
+```Activity2``` 是氚云流程默认的发起节点编码。若流程设计中调整了发起节点编码，请替换为实际节点编码。
+
 
 ## 获取控件值
 
