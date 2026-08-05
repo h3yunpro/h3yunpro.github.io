@@ -257,13 +257,32 @@ that.控件编码.OnTempChange(function(){
 
 支持的控件类型：单行文本、多行文本、数值
 
-``` js
-that.控件编码.OnKeyDown(function(event){
+表单控件在失去焦点前不会更新控件值，因此在 ```OnKeyDown``` 事件中调用 ```GetValue()``` 获取到的可能是旧值。如果需要在按键事件中获取最新录入的值，可以通过 ```event.srcElement.value``` 获取。
 
-    //可通过判断 event.keyCode 的值来确定用户按下哪个按键，如 event.keyCode == "enter" 为回车键
+``` js
+that.控件编码.OnKeyDown(function(event) {
+
+    // event.keyCode == 13 表示按下回车键
+    if(event.keyCode == 13) {
+        var text = event.srcElement.value;
+        console.log(text);
+    }
 
     //可先通过console输出按下的按键，来确定需要监听的按键对应的编码
     console.log(event.keyCode);
+});
+```
+
+例如扫码枪扫码录入时，可以在按下回车后获取最新值，并添加到子表：
+
+``` js
+parent.F0000001.OnKeyDown(function(event) {
+    if(event.keyCode == 13) {
+        var text = event.srcElement.value;
+        parent.D000183Ff03d804c7768487e9266bfb0caddff7c.AddRow($.IGuid(), {
+            "D000183Ff03d804c7768487e9266bfb0caddff7c.F0000003": text
+        });
+    }
 });
 ```
 
