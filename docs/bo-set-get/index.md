@@ -1,0 +1,554 @@
+---
+url: 'https://h3yunpro.github.io/docs/bo-set-get/index.md'
+---
+`H3.DataModel.BizObject` 实现了索引器，可以使用 `bo["控件编码"]` 的方式指定控件
+
+取值时由于返回的都是 `Object` 类型，所以需要拆箱，例：
+`string str = bo["控件编码"] + string.Empty;`
+
+赋值时装箱，例：
+`bo["控件编码"] = DateTime.Now;`
+
+::: warning
+本文档中的`bo`变量，指一个`H3.DataModel.BizObject`类型的实例，此实例获取方式可通过以下几种方式获取：
+
+1. `H3.DataModel.BizObject bo = this.Request.BizObject;`
+2. `H3.DataModel.BizObject bo = new H3.DataModel.BizObject(engine, schema, H3.Organization.User.SystemUserId);`
+3. `H3.DataModel.BizObject bo = H3.DataModel.BizObject.Load(H3.Organization.User.SystemUserId, engine, schema.SchemaCode, bizObjectId, false);`
+4. `H3.DataModel.BizObject[] boArray = H3.DataModel.BizObject.GetList(engine, H3.Organization.User.SystemUserId, schema, H3.DataModel.GetListScopeType.GlobalAll, filter);`  `H3.DataModel.BizObject bo = boArray[0];`
+
+也可参考此文档：[业务对象](/docs/biz-object)
+:::
+
+下面是控件的取值/赋值详细说明
+
+## 单行文本/多行文本/单选框/下拉框/流水号
+
+此类控件值都是 `String` 类型
+
+取值：
+
+```cs
+string str = bo["控件编码"] + string.Empty;
+if(string.IsNullOrEmpty(str))
+{
+    //此控件值为 null 或 空字符串
+}
+if(string.IsNullOrWhiteSpace(str))
+{
+    //此控件值为 null 或 空字符串 或 空格
+}
+```
+
+::: tip
+`+ string.Empty` 是 C# 的隐式转换语法，可以不用判断 `bo["控件编码"]` 的值是否为 `null`，会将 null 自动处理成空字符串。
+:::
+
+赋值：`bo["控件编码"] = "xxx";`
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 人员单选/部门单选/关联表单
+
+此类控件值都是 `string` 类型，区别是：
+
+* 人员单选 值是氚云用户Id，可通过SQL查询 [系统-用户表 H\_User](/docs/database/#系统-用户表-h-user) 获得
+* 部门单选 值是氚云部门Id，可通过SQL查询 [系统-部门表 H\_Organizationunit](/docs/database/#系统-部门表-h-organizationunit) 获得
+* 关联表单 值是关联的表单数据Id，可通过关联表单控件的值，或者通过业务对象或SQL查询表单数据获得
+
+取值：`string userId = bo["控件编码"] + string.Empty;`
+
+赋值：`bo["控件编码"] = "44358530-a4cc-4e9c-9009-2c052f71c706";`
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 人员多选/部门多选/关联表单多选
+
+此类控件值都是 `string[]` 类型，区别是：
+
+* 人员多选 值是氚云用户Id数组，可通过SQL查询 [系统-用户表 H\_User](/docs/database/#系统-用户表-h-user) 获得
+* 部门多选 值是氚云部门Id数组，可通过SQL查询 [系统-部门表 H\_Organizationunit](/docs/database/#系统-部门表-h-organizationunit) 获得
+* 关联表单多选 值是关联的表单数据Id数组，可通过关联表单控件的值，或者通过业务对象或SQL查询表单数据获得
+
+取值：
+
+```cs
+string[] userIdArray = (string[]) bo["控件编码"];
+if(userIdArray == null || userIdArray.Length == 0)
+{
+    //此控件值为null 或 无任何元素
+} else
+{
+    //有值时循环获取每个Id
+    foreach(string userId in userIdArray) 
+    {
+
+    }
+}
+```
+
+赋值：
+
+```cs
+//此处本应通过查询方式获得Id数组，篇幅原因此处不贴代码
+string[] userIdArray = new string[]{ "44358530-a4cc-4e9c-9009-2c052f71c706", "c9afbea4-1800-4708-bb6a-90dd5a46e538" };
+bo["控件编码"] = userIdArray;
+```
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 日期
+
+此控件值是 `DateTime` 类型
+
+取值：
+
+```cs
+string timeStr = bo["控件编码"] + string.Empty;
+if(string.IsNullOrWhiteSpace(timeStr))
+{
+    //此控件值为null
+} else
+{
+    //有值时转换成 DateTime 类型
+    DateTime time = DateTime.Parse(timeStr);
+}
+```
+
+赋值：`bo["控件编码"] = DateTime.Now;`
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 数字
+
+此控件值是 `decimal` 类型，
+
+取值示例一：
+
+```cs
+string numStr = bo["控件编码"] + string.Empty;
+if(string.IsNullOrWhiteSpace(numStr))
+{
+    //此控件值为null，此处可以写相关处理逻辑或抛异常处理
+} else
+{
+    //有值时转换成 decimal 类型
+    //因为氚云数字控件可配置最多16位小数，所以为了不丢失精度，转成decimal类型较好
+    decimal num = decimal.Parse(numStr);
+}
+```
+
+取值示例二：
+
+```cs
+//此示例跟一的区别在于，本示例不处理数字控件值为空的情况，为空时默认结果值为0
+string numStr = bo["控件编码"] + string.Empty;
+decimal num = 0m;
+if(!string.IsNullOrWhiteSpace(numStr))
+{
+    //有值时转换成 decimal 类型
+    //因为氚云数字控件可配置最多16位小数，所以为了不丢失精度，转成decimal类型较好
+    num = decimal.Parse(numStr);
+}
+
+//上面已经获取到了数字控件的值，在此继续写对该值操作的业务代码
+//但是注意num值可能为0，所以把num作为除数前（0作为除数会抛异常），需要判断一下num值是否为0
+decimal result = 0m;
+if(num != 0m)
+{
+    result = 100 / num;
+}
+```
+
+赋值：
+
+1. 赋值一个整数
+
+```cs
+int num = 999;
+bo["控件编码"] = num;
+```
+
+2. 赋值一个小数
+
+```cs
+//100.22 后面有个“m”，是C#的decimal值语法，因为直接写 100.22 表示的是double类型，而 100.22m 表示是一个decimal类型
+decimal num = 100.22m;
+bo["控件编码"] = num;
+```
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 复选框
+
+此控件值是 `string` 类型，但是值的格式是：`选项值1;选项值2;选项值3`。\
+所以，取值时，把值通过 `;` 分割，即可得到每个选项值。
+
+取值：
+
+```cs
+//获取复选框控件的值
+string str = bo["控件编码"] + string.Empty;
+
+//先定义一个结果数组
+string[] value = null;
+//判断控件值不为空
+if(!string.IsNullOrWhiteSpace(str)) 
+{
+    //把值通过 ; 符号分割，即可得到所有选项值的数组
+    value = str.Split(new char[]{ ';'});
+}
+
+if(value == null || value.Length == 0)
+{
+    //未选择选项
+} else
+{
+    //有选择选择，则循环获取每个选项值
+    foreach(string item in value) 
+    {
+
+    }
+}
+```
+
+判断是否选择了某个选项：
+
+```cs
+//如果需要判断是否选择了某个选项，可以用Contains方法判断
+string str = bo["控件编码"] + string.Empty;
+if(str.Contains("选项1"))
+{
+    //选择了选项1
+}
+```
+
+赋值：
+
+```cs
+bo["控件编码"] = "选项1;选项2";
+```
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 是/否
+
+此控件值是 `bool` 类型
+
+取值：
+
+```cs
+//由于控件值可能为null，直接转bool类型有风险，先转成string类型判断一下是否是null
+string str = bo["控件编码"] + string.Empty;
+
+//定义一个bool类型的结果
+bool value = false;
+if(!string.IsNullOrWhiteSpace(str))
+{
+    //当控件值不为空，则将string转成bool类型
+    value = bool.Parse(str);
+}
+
+//判断 是/否 控件值
+if(value)
+{
+    //选择了 是
+} else
+{
+    //选择了 否
+}
+```
+
+赋值：`bo["控件编码"] = true;`
+
+清空控件值：
+
+```cs
+//由于此控件按设计来说，取值只有两种，所以若要清空控件值，设置为 false 即可。
+bo["控件编码"] = false;
+```
+
+## 地址
+
+此控件值是 `string` 类型的JSON字符串，格式如：
+
+```json
+{"adcode":"440305","adname":"广东省 深圳市 南山区","Detail":"科兴科学园B1栋"}
+```
+
+> JSON里的adcode是中国行政区划代码，可访问：[2022年中华人民共和国县以上行政区划代码](https://blog.csdn.net/m0_58016522/article/details/135306117)。
+>
+> **注意：这个区划代码国家会修订，氚云的地址控件也会随之更新，所以使用时请百度查询最新版的区划代码。**
+
+取值：
+
+```cs
+string str = bo["控件编码"] + string.Empty;
+if(string.IsNullOrWhiteSpace(str))
+{
+    //此控件值为 null 或 空字符串 或 空格
+} else
+{
+    //此控件有值
+}
+```
+
+赋值：
+
+```cs
+bo["控件编码"] = "{\"adcode\":\"440305\",\"adname\":\"广东省 深圳市 南山区\",\"Detail\":\"科兴科学园B1栋\"}";
+```
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 位置
+
+此控件值是 `string` 类型的JSON字符串，JSON结构如下：
+
+```json
+{
+  "Address": "广东省深圳市南山区粤海街道南山科兴科学园C2栋",
+  "Point": {
+    "lat": 22.547421,
+    "lng": 113.944386
+  },
+  "CSType": 2,
+  "WGS84Point": {
+    "lng": 113.93950766274739,
+    "lat": 22.550433917423504
+  }
+}
+```
+
+取值：
+
+```cs
+string str = bo["控件编码"] + string.Empty;
+if(string.IsNullOrWhiteSpace(str))
+{
+    //此控件值为 null 或 空字符串 或 空格
+} else
+{
+    //此控件有值
+}
+```
+
+赋值：
+
+```cs
+bo["控件编码"] = "{\"Address\":\"广东省深圳市南山区粤海街道南山科兴科学园C2栋\",\"Point\":{\"lat\":22.547421,\"lng\":113.944386},\"CSType\":2,\"WGS84Point\":{\"lng\":113.93950766274739,\"lat\":22.550433917423504}}";
+```
+
+清空控件值：`bo["控件编码"] = null;`
+
+## 附件/图片
+
+::: warning
+此控件取值赋值，不能在表单数据未保存之前，比如在 `base.OnSubmit(actionName, postValue, response);` 代码之前获取当前表单的附件/图片，或者复制当前表单的附件/图片到另外表单。\
+正确做法应该是在 `base.OnSubmit(actionName, postValue, response);` 之后对当前表单的附件/图片进行操作。
+:::
+
+取值：\
+附件/图片 控件，无法通过业务对象取值，若要获取附件Id，使用SQL查询 `H_BizObjectFile` 表。
+
+赋值：\
+附件/图片 控件，无法通过业务对象直接赋值，只可以通过复制其他已有数据的附件，进行赋值。
+
+复制 附件/图片 示例：
+
+`engine` 实例获取方式参考 [H3.IEngine](/docs/cs-instance/#h3-iengine)
+
+```cs
+//主表 复制到 主表 上
+engine.BizObjectManager.CopyFiles("来源-主表编码", "", "来源-主表内附件控件编码", "来源-主表数据ObjectId", "目标-主表编码", "", "目标-主表内附件控件编码", "目标-主表数据ObjectId", true, true);
+
+//主表 复制到 子表 上
+engine.BizObjectManager.CopyFiles("来源-主表编码", "", "来源-主表内附件控件编码", "来源-主表数据ObjectId", "目标-主表编码", "目标-子表编码", "目标-子表内附件控件编码", "目标-子表数据ObjectId", true, true);
+
+//子表 复制到 主表 上
+engine.BizObjectManager.CopyFiles("来源-主表编码", "来源-子表编码", "来源-子表内附件控件编码", "来源-子表数据ObjectId", "目标-主表编码", "", "目标-主表内附件控件编码", "目标-主表数据ObjectId", true, true);
+
+//子表 复制到 子表 上
+engine.BizObjectManager.CopyFiles("来源-主表编码", "来源-子表编码", "来源-子表内附件控件编码", "来源-子表数据ObjectId", "目标-主表编码", "目标-子表编码", "目标-子表内附件控件编码", "目标-子表数据ObjectId", true, true);
+```
+
+**CopyFiles方法最后两个true的释义：**\
+倒数第二个 `true`：本次复制附件到目标控件是覆盖还是添加（`true`：覆盖，`false`：追加）\
+最后一个 `true`：若本次是覆盖模式，目标控件原先附件是否进行物理删除（`true`：物理删除，`false`：只删除记录）
+
+清空控件值：
+
+`engine` 实例获取方式参考 [H3.IEngine](/docs/cs-instance/#h3-iengine)
+
+```cs
+//第一个参数：附件Id，即数据表 H_BizObjectFile 的 ObjectId 字段值
+//第二个参数：true（物理删除附件），false（逻辑删除附件，实际附件还保存着，只是无法查到）
+engine.BizObjectManager.RemoveFile("附件Id", true);
+```
+
+## 子表
+
+此控件值是 `H3.DataModel.BizObject[]` 类型
+
+由于子表的类型是业务对象数组，跟业务对象操作有关，都要用上 `H3.IEngine` 实例，下面的示例中 `engine` 变量即 `H3.IEngine` 实例，参考 [H3.IEngine](/docs/cs-instance/#h3-iengine)
+
+虽然子表在数据库中是另一张表，但是业务对象对其进行了抽象。子表数据集合被当做了主表数据的一个字段，所以操作子表数据，大部分情况下都要通过主表的业务对象进行取值/赋值。
+
+取值：
+
+```cs
+H3.DataModel.BizObject[] chiBoArray = (H3.DataModel.BizObject[]) bo["子表控件编码"];
+if(chiBoArray == null || chiBoArray.Length == 0)
+{
+    //子表无数据
+} else
+{
+    //子表有数据
+
+    //获取子表第一行的业务对象
+    H3.DataModel.BizObject firstChiBo = chiBoArray[0];
+
+    //循环子表所有行的业务对象
+    foreach(H3.DataModel.BizObject chiBo in chiBoArray) 
+    {
+
+    }
+}
+```
+
+新增子表行数据：
+
+```cs
+//通过主表的Schema实例，获取子表的Schema实例
+H3.DataModel.BizObjectSchema chiSchema = bo.Schema.GetChildSchema("子表控件编码");
+
+//子表每一行都是一个业务对象，所以这里需要定义一个List集合变量
+List < H3.DataModel.BizObject > chiBoList = new List<H3.DataModel.BizObject>();
+
+//如果原本子表已有数据，那需要先将它们加入到chiBoList
+//注：如果是同时新增主子表数据，那无需本操作，本操作主要是考虑到更新操作
+H3.DataModel.BizObject[] chiBoArray = (H3.DataModel.BizObject[]) bo[chiSchema.SchemaCode];
+if(chiBoArray != null && chiBoArray.Length > 0)
+{
+    chiBoList.AddRange(chiBoArray);
+}
+
+/*
+    注：创建子表业务对象时，由于系统字段只有 ObjectId、Name、ParentObjectId，
+        而这些字段通过业务对象创建数据都会自动生成，所以设置子表业务对象时，
+        可以只用设置子表内的控件值，系统属性一个都无需设置
+*/
+
+/*****Start 下面开始演示new一个简易的子表业务对象*****/
+//通过构造函数，new一个子表业务对象
+H3.DataModel.BizObject aNewchiBo = new H3.DataModel.BizObject(engine, chiSchema, H3.Organization.User.SystemUserId);
+//设置子表内控件编码为 F0000001 的值，此控件为日期控件，此处将当前系统时间赋值给它
+aNewchiBo["F0000001"] = DateTime.Now;
+//将这个子表业务对象，添加到List集合里
+chiBoList.Add(aNewchiBo);
+/*****End*****/
+
+
+/*****Start 下面开始演示通过H3.DataModel.BizObject.GetList查询出另一个表单的数据，通过该表数据循环创建出子表业务对象*****/
+//此处为了节省篇幅，就不做注释了
+H3.DataModel.BizObjectSchema otherSchema = engine.BizObjectManager.GetPublishedSchema("另一个表单的表单编码");
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+andMatcher.Add(new H3.Data.Filter.ItemMatcher("Status", H3.Data.ComparisonOperatorType.Equal, H3.DataModel.BizObjectStatus.Effective));
+filter.Matcher = andMatcher;
+H3.DataModel.BizObject[] otherBoArray = H3.DataModel.BizObject.GetList(engine, H3.Organization.User.SystemUserId, otherSchema, H3.DataModel.GetListScopeType.GlobalAll, filter);
+if(otherBoArray != null && otherBoArray.Length > 0)
+{
+    foreach(H3.DataModel.BizObject otherBo in otherBoArray) 
+    {
+        H3.DataModel.BizObject newChiBo = new H3.DataModel.BizObject(engine, chiSchema, H3.Organization.User.SystemUserId);
+        //将otherBo的 F0000001 控件值，赋值给 newChiBo 的 F0000001 控件
+        newChiBo["F0000001"] = otherBo["F0000001"];
+        //将newChiBo添加到List集合里
+        chiBoList.Add(newChiBo);
+    }
+}
+/*****End*****/
+
+
+/*****Start 下面开始演示通过SQL查询出另一个表单的数据，通过该表数据循环创建出子表业务对象*****/
+//此处为了节省篇幅，就不做注释了
+string sql = "SELECT ObjectId, SeqNo FROM i_D00001ABC WHERE Status=1; ";
+System.Data.DataTable dtAccount = engine.Query.QueryTable(sql, null);
+if(dt != null && dt.Rows.Count > 0)
+{
+    foreach(System.Data.DataRow row in dt.Rows)
+    {
+        H3.DataModel.BizObject newChiBo = new H3.DataModel.BizObject(engine, chiSchema, H3.Organization.User.SystemUserId);
+        //将i_D00001ABC表的 SeqNo 字段值，赋值给 newChiBo 的 F0000001 控件
+        newChiBo["F0000001"] = row["SeqNo"] + string.Empty;
+        //将newChiBo添加到List集合里
+        chiBoList.Add(newChiBo);
+    }
+}
+/*****End*****/
+
+//现在子表业务对象都定义好了，但是只是在List集合里，并未绑定到主表业务对象上，这里就通过给 子表控件赋值 绑定上去
+bo[chiSchema.SchemaCode] = chiBoList.ToArray();
+```
+
+编辑子表行数据：
+
+```cs
+//获取子表数据
+H3.DataModel.BizObject[] chiBoArray = (H3.DataModel.BizObject[]) bo["子表控件编码"];
+if(chiBoArray != null && chiBoArray.Length > 0)
+{
+    //编辑子表第一行的数据
+    chiBoArray[0]["子表内的控件编码"] = "Hello World!";
+
+    //循环编辑子表所有行的数据
+    foreach(H3.DataModel.BizObject chiBo in chiBoArray) 
+    {
+        //此处按照控件类型不一样，赋值格式也不一样，但是可以参照主表业务对象控件的赋值
+        chiBo["子表内的控件编码"] = "Hello World!";
+    }
+}
+```
+
+删除子表行数据：
+
+```cs
+//删除子表行，相当于给子表赋值一个新的H3.DataModel.BizObject[]值，所以这里先定义一个集合
+List < H3.DataModel.BizObject > chiBoList = new List<H3.DataModel.BizObject>();
+
+//获取子表数据
+H3.DataModel.BizObject[] chiBoArray = (H3.DataModel.BizObject[]) bo["子表控件编码"];
+if(chiBoArray != null && chiBoArray.Length > 0)
+{
+
+    for(int i = 0;i < chiBoArray.Length; i++)
+    {
+        //删除子表第一行的数据，就相当于不把第一行数据加入到集合
+        if(i == 0)
+        {
+            //当i为0时，代表子表第一行，所以这里跳过，不添加进集合
+            continue;
+        }
+
+        //删除子表中 F0000001 控件值为空的子表行数据
+        string val = chiBoArray[i]["F0000001"] + string.Empty;
+        if(string.IsNullOrWhiteSpace(val))
+        {
+            continue;
+        }
+
+        //其他的子表数据加入集合
+        chiBoList.Add(chiBoArray[i]);
+    }
+}
+
+//最后别忘了要把新的子表数据绑定到主表上
+bo["子表控件编码"] = chiBoList.ToArray();
+```
+
+清空控件值：
+
+```cs
+bo["子表控件编码"] = new H3.DataModel.BizObject[]{ };
+```

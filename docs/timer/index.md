@@ -1,0 +1,195 @@
+---
+url: 'https://h3yunpro.github.io/docs/timer/index.md'
+---
+氚云中想要定时执行一段代码去处理数据，可以利用定时器。
+
+氚云有一个定时器引擎，此引擎会每隔4小时（**此间隔时间为平台底层设定，不支持用户自定义，解决方案请参照下方代码示例**），检测用户编写的代码。\
+当检测到代码中有继承 `H3.SmartForm.Timer` 类的子类，将会动态实例化此子类，并且自动调用子类中的 `OnWork` 方法。
+
+如果应用内定义了多个 `H3.SmartForm.Timer` 类的子类，并不是同时执行，而是会按定义的顺序逐个执行。\
+利用这个特性，我们只需要，定义一个类，并且继承 `H3.SmartForm.Timer`，那我们的代码就可以每隔4小时执行一次了。
+
+## 注意事项
+
+::: tip
+一般而言，会把定时器类定义在表单设计后端代码，默认的表单类之下。\
+定义的定时器，无需在任意地方调用，只需定义即可，等待定时器引擎自动去触发。\
+由于不确定定时器引擎何时去调用自定义代码，又是固定4小时一次，所以可以根据触发时的时间范围（范围时间差为4小时）去确定，下面的代码示例有做示范。
+:::
+
+::: warning
+为了不给服务器造成过大负担，每个应用，定时器引擎只会耗费**20分钟**时间去执行用户的代码。\
+从触发用户第一个定时器开始计时，到达**20分钟**时，不管当前代码是否执行完成，都会立马中止，并且不再执行其他未执行的定时器。
+:::
+
+::: warning
+在定时器代码书写前，请注意一点：**定时器类**，不是**表单控制器类**，没有 `this.Request`，所以跟 `this.Request` 相关的参数请勿在定时器中使用。
+
+下面举例一些定时器类中不可使用的参数：
+
+1. 不能使用 `this.Request.BizObject`，请另行查询出需要的业务对象，参考此文档：[业务对象-GetList](/docs/biz-object/#静态方法-getlist)
+2. 将 `this.Request.Engine` 替换为方法传入参数 `engine`
+3. 将 `this.Request.UserContext.UserId` 替换为指定的人员id或系统默认用户Id（即：`H3.Organization.User.SystemUserId`）
+4. 请勿使用 `this.Request.InstanceId`
+   :::
+
+## 代码示例
+
+```cs
+//定义一个定时器类(类名格式：自定义名称 + _Timer)，且继承H3.SmartForm.Timer类
+public class MyTest_Timer: H3.SmartForm.Timer
+{
+    //构造方法，跟类名保持一致，里面不必书写代码，但是必须存在
+    public MyTest_Timer() { }
+
+    /*
+        重写父类的OnWork方法，此步必做，否则会报错
+        定时器引擎实例化MyTest_Timer后，会自动调用本方法
+        此方法每隔4小时被定时器引擎调用一次
+    */
+    protected override void OnWork(H3.IEngine engine)
+    {
+        /*
+            1. 此处无当前表单业务对象，所以不能使用this.Request.BizObject，请另行查询出需要的业务对象
+            2. 此处无请求对象，所以请将this.Request.Engine替换为方法传入参数的engine
+            3. 此处无当前登录人，所以请将this.Request.UserContext.UserId替换为指定的人员id或系统默认用户Id（即：H3.Organization.User.SystemUserId）
+        */
+
+        DateTime nowTime = DateTime.Now;//获取当前时间
+
+        /*--------------示例一---------------*/
+        DateTime sTime = DateTime.Parse(nowTime.ToString("yyyy-MM-dd 10:00:00"));//获取今天的10点
+        DateTime eTime = DateTime.Parse(nowTime.ToString("yyyy-MM-dd 14:00:00"));//获取今天的14点
+        //判断当前时间是否处于10点-14点间
+        if(sTime <= nowTime && eTime >= nowTime)
+        {
+            //在每天 10点-14点 间要执行的代码
+            //时间间隔范围必须至少为 4小时，来匹配上定时器引擎的触发间隔
+        }
+
+        /*--------------示例二---------------*/
+        //判断当前时间小时数范围为 8点-16点
+        if(nowTime.Hour >= 8 && nowTime.Hour <= 16)
+        {
+            //在每天 8点-16点 间要执行的代码
+            //这个时间范围相差 8小时，理论上，此处代码一天会被执行 2次
+        }
+
+        /*--------------示例三---------------*/
+        //判断当前时间月份为12月，日期为1号，小时为12点-16点
+        if(nowTime.Month == 12 && nowTime.Day == 1 && nowTime.Hour >= 12 && nowTime.Hour <= 16)
+        {
+            //在每年 12月1号 12点-16点 间触发执行一次
+        }
+
+        /*--------------示例四---------------*/
+        //调用定时器类中封装的方法
+        DoSomething(engine, nowTime);
+    }
+
+    //业务代码封装成方法
+    public static void DoSomething(H3.IEngine engine, DateTime time)
+    {
+
+    }
+}
+```
+
+## 常见问题
+
+1. 执行结果如何知晓？
+
+   可以搭建一个日志表单，定时器中将执行结果写入到该表单（即创建表单数据，将执行时间、结果等赋值到表单中的控件内）
+
+   示例：
+
+```cs
+public class MyTest_Timer: H3.SmartForm.Timer
+{
+    public MyTest_Timer() { }
+
+    protected override void OnWork(H3.IEngine engine)
+    {
+        /*
+        需要新建一个表单，表单名字为日志表，里面拖入4个控件：
+        ExeTime：日志记录时间        日期控件
+        Title：日志记录标题          单行文本
+        Result：执行结果             单行文本
+        Message：日志记录详细信息     多行文本
+        */
+
+        H3.DataModel.BizObjectSchema exeSchema = engine.BizObjectManager.GetPublishedSchema("日志表单编码");
+        H3.DataModel.BizObject exeBo = new H3.DataModel.BizObject(engine, exeSchema, H3.Organization.User.SystemUserId);
+        exeBo.Status = H3.DataModel.BizObjectStatus.Effective;
+        exeBo["ExeTime"] = DateTime.Now;
+        exeBo["Title"] = "MyTest_Timer的执行日志";
+
+        try 
+        {
+            //这里编写定时处理的业务代码
+
+
+            //当业务代码执行无异常，则记录下执行成功时的结果和信息
+            exeBo["Result"] = "成功";
+            exeBo["Message"] = string.Format("完成执行时间：{0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+        } catch(Exception ex) 
+        {
+            //当业务代码执行出现异常，则记录下执行失败时的结果和异常原因
+            exeBo["Result"] = "失败";
+            exeBo["Message"] = g2000Str(ex.ToString());
+        }
+
+        exeBo.Create();//创建一条日志记录数据
+    }
+
+    //由于多行文本最多存放2000字的内容，所以这个方法对字符串做一个截取处理
+    //当传入字符串不超过2000字则原样返回，当超过则返回前2000字
+    private string g2000Str(string str)
+    {
+        if(!string.IsNullOrWhiteSpace(str) && str.Length > 2000)
+        {
+            return str.Substring(0, 2000);
+        }
+        return str;
+    }
+}
+```
+
+2. 如何调试定时器里的代码？
+
+   定时器毕竟是由引擎主动调用的，所以我们没法模拟引擎调用的情况，只能通过其他方式来验证代码是否正确，做法如下：
+
+   ① 在 **定时器类** 中，把业务代码封装成一个 `public static` 方法（*参考上面示例代码中的 `DoSomething` 方法*）
+
+   ② 在 **表单类** 的 `OnLoad` 事件中，调用定时器类里的业务代码方法（*调试时记得点下新增按钮哦( • ̀ω•́ )✧*）
+
+   ③ 调试完成后，在 **表单类** 的 `OnLoad` 事件中，去掉调用
+
+   示例：
+
+```cs
+//表单类
+public class Dxxx: H3.SmartForm.SmartFormController
+{
+    public Dxxx(H3.SmartForm.SmartFormRequest request): base(request)
+    {
+    }
+
+    protected override void OnLoad(H3.SmartForm.LoadSmartFormResponse response)
+    {
+        //在创建模式下（即点击 新增 按钮时），调用 MyTest_Timer 类的 DoSomething 方法
+        if(this.Request.IsCreateMode) 
+        {
+            //此代码只用作调试，调试完成后，请去掉本行代码，后续由定时器引擎自动去触发代码即可
+            MyTest_Timer.DoSomething(this.Engine, DateTime.Now);
+        }
+
+        base.OnLoad(response);
+    }
+
+    protected override void OnSubmit(string actionName, H3.SmartForm.SmartFormPostValue postValue, H3.SmartForm.SubmitSmartFormResponse response)
+    {
+        base.OnSubmit(actionName, postValue, response);
+    }
+}
+```

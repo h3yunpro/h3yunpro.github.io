@@ -1,0 +1,492 @@
+---
+url: 'https://h3yunpro.github.io/docs/database/index.md'
+---
+开发者可以通过3种方式查询数据库数据：
+
+1. [后端代码中执行SQL](/docs/exec-sql)
+2. [SQL报表](/docs/sql-report)
+3. [SQL高级数据源](/docs/sql-dashboard)
+
+## \[表单]主表
+
+数据库表名：i\_表单编码
+
+注：[表单编码查看方式](/docs/check-code/#表单编码查看)
+
+| **序号** | **字段编码**           | **字段释义**      | **备注**                                     |
+|--------|--------------------|---------------|---------------------------------------------|
+| 1      | ObjectId           | 数据Id          |  主键，数据的唯一标识                                 |
+| 2      | Name               | 数据标题          |                                             |
+| 3      | CreatedBy          | 创建人Id         | 对应H\_User表ObjectId字段                         |
+| 4      | OwnerId            | 归属人Id         | 对应H\_User表ObjectId字段                         |
+| 5      | OwnerDeptId        | 归属部门Id        | 对应H\_Organizationunit表ObjectId字段             |
+| 6      | CreatedTime        | 创建时间          |                                             |
+| 7      | ModifiedBy         | 最后一次修改数据的人员id | 对应H\_User表ObjectId字段                     |
+| 8      | ModifiedTime       | 最后一次修改数据的时间   |                                             |
+| 9      | WorkflowInstanceId | 流程Id          | 当表单有流程，且已发起流程时有值。对应H\_WorkflowInstance表ObjectId字段              |
+| 10     | Status             | 数据状态          | 取值：0 草稿，1 生效/流程结束，2 流程进行中，3 作废 |
+| ...    | 表单中自定义控件的编码        | 表单内自定义控件的值    | 当自定义控件值未填，数据库存储null，查询null的字段值要用“is null”   |
+
+## \[表单]子表
+
+数据库表名：i\_子表控件编码
+
+注：[子表控件编码查看方式](/docs/check-code/#子表编码查看)
+
+| **序号** | **字段编码**            | **字段释义**     | **备注**         |
+|--------|---------------------|--------------|-----------------|
+| 1      | ObjectId            | 子表数据Id       | 主键，数据的唯一标识      |
+| 5      | Name                | 子表数据标题       |                 |
+| 2      | ParentObjectId      | 该数据所属主表的数据Id |  对应主表ObjectId字段 |
+| 3      | ParentPropertyName  | 子表编码         |                 |
+| 4      | ParentIndex         | 本条数据处在子表第几行  | 从0开始，第一行下标：0    |
+| ...    | 子表中自定义控件的编码     | 子表内自定义控件的值      | 当自定义控件值未填，数据库存储null，查询null的字段值要用“is null” |
+
+## \[表单]关联表单多选中间表
+
+数据库表名：
+
+* 控件在主表：i\_表单编码\_关联表单多选控件编码
+* 控件在子表：i\_子表控件编码\_关联表单多选控件编码
+
+| **序号** | **字段编码**           | **字段释义** | **备注**               |
+|--------|--------------------|----------|----------------------|
+| 1      | ObjectId           | 主表数据Id/子表数据Id     |    对应控件所在的主表ObjectId字段/子表ObjectId字段        |
+| 2      | ValueIndex         | 本选项是第几个，从0开始     |                      |
+| 3      | PropertyValue      | 描述表单多选控件的其中1个选项值（若此关联表单控件有多个值，会在此表有多行数据）     |  对应所关联的表单数据的ObjectId字段       |
+
+## \[系统-公司表] H\_Company
+
+数据库表名：H\_Company
+
+| **序号** | **字段编码**           | **字段释义** | **备注**               |
+|--------|--------------------|----------|----------------------|
+| 1      | ObjectId           | 公司Id     | 主键，公司的唯一标识           |
+| 2      | Name               | 公司名称     |                      |
+| 3      | Description        | 描述       |                      |
+| 4      | Code               | 公司编码     |                      |
+| 5      | ManagerId          | 经理       | 对应H\_User表ObjectId字段  |
+| 6      | SortKey            | 排序值      |                      |
+| 7      | ParentObjectId     | 父对象Id    | 暂未使用                 |
+| 8      | ParentPropertyName | 父对象属性名称  | 暂未使用                 |
+| 9      | ParentIndex        | 父对象索引    | 暂未使用                 |
+
+## \[系统-部门表] H\_Organizationunit
+
+数据库表名：H\_Organizationunit
+
+| **序号** | **字段编码**             | **字段释义**    | **备注**                           |
+|--------|----------------------|-------------|----------------------------------|
+| 1      | ObjectId             | 部门Id        | 主键，部门的唯一标识                       |
+| 2      | Name                 | 部门名称        |                                  |
+| 3      | DingTalkDepartmentId | 钉钉中的部门Id    |                                  |
+| 4      | WeChatDepartmentId   | 企微中的部门Id    |                                  |
+| 5      | ParentId             | 父部门ObjectId | 对应H\_Organizationunit表ObjectId字段  |
+| 6      | Visibility           | 可见类型        |                                  |
+| 7      | State                | 状态          | 取值：0：有效，1：无效                     |
+| 8      | Description          | 描述          |                                  |
+| 9      | Code                 | 部门编码        |                                  |
+| 10     | ManagerId            | 部门经理        | 对应H\_User表ObjectId字段              |
+| 11     | CreatedTime          | 创建时间        |                                  |
+| 12     | ModifiedTime         | 修改时间        |                                  |
+| 13     | Sortkey              | 排序值         |                                  |
+| 14     | ParentObjectId       | 父对象Id       | 暂未使用                             |
+| 15     | ParentPropertyName   | 父对象属性名称     | 暂未使用                             |
+| 16     | ParentIndex          | 父对象索引       | 暂未使用                             |
+
+## \[系统-用户表] H\_User
+
+数据库表名：H\_User
+
+| **序号** | **字段编码**       | **字段释义**       | **备注**                           |
+|--------|---------------------|----------------|----------------------------------|
+| 1      | ObjectId            | 氚云用户Id         | 主键，用户的唯一标识                       |
+| 2      | State               | 状态               | 取值：0：在职，1：离职                     |
+| 3      | Name                | 用户姓名           |                                  |
+| 4      | ParentId            | 主部门Id           | 对应H\_Organizationunit表ObjectId字段  |
+| 5      | ManagerId           | 部门经理用户Id     | 对应H\_User表ObjectId字段              |
+| 6      | DingTalkAccount     | 对应钉钉用户Id     | 跟钉钉对接时可用，字段值格式：`钉钉userId.钉钉corpId`（注意：使用时需截取出点号之前的钉钉userId）   |
+| 7      | WechatUserId        | 对应企微用户Id     |                                  |
+| 8      | Position            | 职位             |                                  |
+| 9      | Mobile              | 手机号            |                                  |
+| 10     | Email               | 邮箱             |                                  |
+| 11     | EmployeeNumber      | 工号             |                                  |
+| 12     | Title               | 用户的职务       |                                  |
+| 13     | Birthday            | 生日             |                                  |
+| 14     | Gender              | 性别             |                                  |
+| 15     | EntryDate           | 入职日期           |                                  |
+| 16     | DepartureDate       | 离职日期           |                                  |
+| 17     | HomePhone           | 家庭电话           |                                  |
+| 18     | OfficePhone         | 办公电话           |                                  |
+| 19     | QQ                  | QQ             |                                  |
+| 20     | IdNumber            | 身份证号码          |                                  |
+| 21     | EmployeeRank        | 员工职级           |                                  |
+| 22     | ProfilePhotoUrl     | 头像             |                                  |
+| 23     | DepartmentName      | 部门名称           |                                  |
+| 24     | Password            | 密码             |                                  |
+| 25     | DingId              | 用户DingId       |                                  |
+| 26     | ExtAttr             | 扩展属性           |                                  |
+| 27     | Visibility          | 可见类型           |                                  |
+| 28     | Description         | 描述             |                                  |
+| 29     | CreatedTime         | 创建时间           |                                  |
+| 30     | ModifiedTime        | 修改时间           |                                  |
+| 31     | SortKey             | 排序值            |                                  |
+| 32     | ParentObjectId      | 父对象Id          | 暂未使用                             |
+| 33     | ParentPropertyName  | 父对象属性名称        | 暂未使用                             |
+| 34     | ParentIndex         | 父对象索引          | 暂未使用                             |
+
+## \[系统-用户&部门关系表] H\_User\_ViceparentIds
+
+数据库表名：H\_User\_ViceparentIds
+
+| **序号** | **字段编码**             | **字段释义**    | **备注**                           |
+|--------|----------------------|-------------|----------------------------------|
+| 1      | ObjectId             | 用户Id        | 对应H\_User表ObjectId字段             |
+| 2      | ValueIndex           | 第几个，从0开始 |                                  |
+| 3      | PropertyValue        | 部门Id          | 对应H\_Organizationunit表ObjectId字段    |
+
+## \[系统-角色分组表] H\_OrgRoleGroup
+
+数据库表名：H\_OrgRoleGroup
+
+| **序号** | **字段编码**            | **字段释义** | **备注**                  |
+|--------|---------------------|----------|-------------------------|
+| 1      | ObjectId            | 角色分组Id   | 主键，角色分组的唯一标识       |
+| 2      | Name                | 角色分组名称   |                         |
+| 3      | EntryroleGroupId    | 来源Id     | 暂未使用                    |
+| 4      | ParentId            | 公司Id     | 对应H\_Company表ObjectId字段  |
+| 5      | Visibility          | 可见类型     |                         |
+| 6      | State               | 状态       | 取值：0：有效，1：无效       |
+| 7      | Description         | 描述       | 暂未使用                    |
+| 8      | Code                | 分组代码     | 暂未使用                    |
+| 9      | ManagerId           | 主管人      | 暂未使用                    |
+| 10     | CreatedTime         | 创建时间     |                         |
+| 11     | ModifiedTime        | 最后修改时间   |                         |
+| 12     | SortKey             | 排序值      |                         |
+| 13     | ParentObjectId      | 父对象Id    | 暂未使用                    |
+| 14     | ParentPropertyName  | 父对象属性名称  | 暂未使用                    |
+| 15     | ParentIndex         | 父对象索引    | 暂未使用                    |
+
+## \[系统-角色表] H\_OrgRole
+
+数据库表名：H\_OrgRole
+
+| **序号** | **字段编码**           | **字段释义** | **备注**                  |
+|--------|--------------------|----------|-------------------------|
+| 1      | ObjectId           | 角色Id     | 主键，角色的唯一标识              |
+| 2      | Name               | 角色名称     |                         |
+| 3      | EntryRoleId        | 来源Id     | 暂未使用                    |
+| 4      | GroupId            | 分组Id     | 对应H\_OrgRoleGroup表ObjectId字段  |
+| 5      | ParentId           | 公司Id     | 对应H\_Company表ObjectId字段  |
+| 6      | CompanyId          | 公司Id     | 对应H\_Company表ObjectId字段  |
+| 7      | Visibility         | 可见类型     | 暂未使用                    |
+| 8      | State              | 状态       | 取值：0：有效，1：无效            |
+| 9      | Description        | 描述       | 暂未使用                    |
+| 10     | Code               | 角色编码     | 暂未使用                    |
+| 11     | ManagerId          | 主管人      | 暂未使用                    |
+| 12     | CreatedTime        | 创建时间     |                         |
+| 13     | ModifiedTime       | 修改时间     |                         |
+| 14     | Sortkey            | 排序值      |                         |
+| 15     | ParentObjectId     | 父对象Id    | 暂未使用                    |
+| 16     | ParentPropertyName | 父对象属性名称  | 暂未使用                    |
+| 17     | ParentIndex        | 父对象索引    | 暂未使用                    |
+
+## \[系统-角色&用户关系表] H\_Orgpost
+
+数据库表名：H\_Orgpost
+
+| **序号** | **字段编码**           | **字段释义**     | **备注**                 |
+|--------|--------------------|--------------|------------------------|
+| 1      | ObjectId           | 角色和用户对应关系Id  | 主键，角色用户关系的唯一标识         |
+| 2      | UserId             | 角色对应的用户Id    | 对应H\_User表ObjectId字段    |
+| 3      | ParentId           | 角色Id         | 对应H\_OrgRole表ObjectId字段 |
+| 4      | CompanyId          | 公司Id         | 对应H\_Company表ObjectId字段 |
+| 5      | Depts              | 服务部门Id       |                        |
+| 6      | Visibility         | 可见类型         | 暂未使用                   |
+| 7      | State              | 状态       | 取值：0：有效，1：无效            |
+| 8      | Name               | 名称           | 暂未使用                   |
+| 9      | Description        | 描述           |                        |
+| 10     | Code               | 编码           |                        |
+| 11     | ManagerId          | 主管人          | 暂未使用                   |
+| 12     | CreatedTime        | 创建时间         |                        |
+| 13     | ModifiedTime       | 修改时间         |                        |
+| 14     | Sortkey            | 排序值          |                        |
+| 15     | ParentObjectId     | 父对象Id        | 暂未使用                   |
+| 16     | ParentPropertyName | 父对象属性名称      | 暂未使用                   |
+| 17     | ParentIndex        | 父对象索引        | 暂未使用                   |
+
+# \[系统-角色&表单关系表] H\_FunctionAcl
+
+数据库表名：H\_Orgpost
+
+| **序号** | **字段编码**           | **字段释义**     | **备注**                 |
+|--------|--------------------|--------------|------------------------|
+| 1      | ObjectId           | 角色和表单对应关系Id     | 主键，角色表单关系的唯一标识         |
+| 2      | RoleId             | 角色Id                  | 对应H\_OrgRole表ObjectId字段    |
+| 3      | FunctionCode       | 表单编码                |                   |
+| 4      | ListViewActions    | 该角色可见列表按钮编码   |                   |
+| 5      | FormActions        | 该角色可见表单按钮编码   |                    |
+
+## \[系统-流程实例表] H\_WorkflowInstance
+
+数据库表名：H\_WorkflowInstance
+
+> 每条审批数据对应此表一条数据
+
+| **序号** | **字段编码**              | **字段释义**             | **备注**                                                       |
+|--------|-----------------------|----------------------|--------------------------------------------------------------|
+| 1      | ObjectId              | 流程Id                 | 主键，流程的唯一标识                                                   |
+| 2      | WorkflowDisplayName   | 流程展示名称               |                                                              |
+| 3      | InstanceName          | 流程实例名称               |                                                              |
+| 4      | Originator            | 发起人Id                | 对应H\_User表ObjectId字段                                          |
+| 5      | OriginatorParent      | 发起人所属组织Id            | 对应H\_Organizationunit表ObjectId字段                              |
+| 6      | IsChildInstance       | 是否子流程                | true：子流程                                                     |
+| 7      | ParentInstanceId      | 父流程Id                | 当IsChildInstance为true时，此字段有值。对应H\_WorkflowInstance表ObjectId字段 |
+| 8      | ParentActivityCode    | 创建该子流程的父流程活动编码       | 当IsChildInstance为true时，此字段有值  |
+| 9      | NotifyParentFinished  | 完成结束时是否通知它的父实例已完成    | 当IsChildInstance为true时，此字段有值      |
+| 10     | ParentActivityTokenId | 创建该子流程的父流程活动的TokenId | 当IsChildInstance为true时，此字段有值      |
+| 11     | WorkflowVersion       | 流程模板的版本              |                                                              |
+| 12     | AppCode               | 应用的编码                |                                                              |
+| 13     | SchemaCode            | 业务对象模式编码             |                                                              |
+| 14     | BizObjectId           | 业务对象对应的Id            | 对应表单表ObjectId字段                                              |
+| 15     | State                 | 流程实例状态        | 0：初始化完成，1：正在启动，2：正在运行，3：正在结束，4：已完成，5：已取消     |
+| 16     | InitiativeTokenId     | 初始的TokenId           | 如果State为1，此字段有值                                              |
+| 17     | FinalTokenId          | 最后一个令牌的Id            | 如果State为3，此字段有值                                              |
+| 18     | NextTokenId           | 下一个新的Token的Id，       |                                                              |
+| 19     | CreatedTime           | 创建时间                 |                                                              |
+| 20     | StartTime             | 启动时间                 |                                                              |
+| 21     | FinishTime            | 完成时间                 |                                                              |
+| 22     | UsedTime              | 使用的时间                | 使用 UsedTime/10000000 得到秒                                     |
+| 23     | PlanFinishTime        | 计划完成时间               |                                                              |
+| 24     | UsedTimeRate          | 未使用                  |                                                              |
+| 25     | Approval              | 是否最终审批通过             | 1：同意，0：不同意，-1：审批人还未处理/取消节点                 |
+| 26     | Remind                | 流程结束后通知给发起人          |                                                              |
+| 27     | Notify                | 流程是否发送消息提醒           |                                                              |
+
+## \[系统-流程工作项表] H\_WorkItem
+
+数据库表名：H\_WorkItem
+
+> 流程每激活一个流程节点，节点上每个审批人，对应此表一条数据，若要查询流程日志，查询本表即可。
+
+| **序号** | **字段编码**            | **字段释义**            | **备注**                          |
+|--------|---------------------|---------------------|---------------------------------|
+| 1      | ObjectId            | 任务Id                | 主键，流程工作项的唯一标识                   |
+| 2      | Participant         | 任务参与者（审批人）          | 对应H\_User表ObjectId字段             |
+| 3      | OriginatorParent    | 发起人部门               | 对应H\_Organizationunit表ObjectId字段 |
+| 4      | Finisher            | 实际完成者               | 对应H\_User表ObjectId字段             |
+| 5      | FinishAccessMethod  | 完成接入方式              |                                 |
+| 6      | WorkflowVersion     | 流程版本号               |                                 |
+| 7      | InstanceId          | 流程实例Id              | 对应H\_WorkflowInstance表ObjectId字段 |
+| 8      | AppCode             | 应用编码                |                                 |
+| 9      | SchemaCode          | 业务对象模式编码            |                                 |
+| 10     | BizObjectId         | 业务对象Id              | 对应表单表ObjectId字段                 |
+| 11     | TokenId             | 流程中的步骤Id         | 该节点激活序号，同一个流程下此字段最大值就代表是最新的节点，可用于查询流程当前节点  |
+| 12     | ActivityCode        | 活动编码                | 即流程设计中节点的编码                     |
+| 13     | ActivityDisplayName | 活动名称                | 即流程设计中节点的名称                     |
+| 14     | DisplayName         | 显示名称（包含流程数据项的组合字符串） |                                 |
+| 15     | ItemSummary         | 摘要                  |                                 |
+| 16     | State               | 任务状态                | 0：等待中，1：进行中，2：已完成，3：已取消，6：已转交   |
+| 17     | ReceiveTime         | 接收时间                |                                 |
+| 18     | StartTime           | 任务开始的时间             |                                 |
+| 19     | WaitTime            | 等待时长                |                                 |
+| 20     | FinishTime          | 任务完成时间              |                                 |
+| 21     | UsedTime            | 使用的时间               | 使用 UsedTime/10000000 得到秒        |
+| 22     | Delegant            | 委托人                 |                                 |
+| 23     | Urged               | 是否催办过               |                                 |
+| 24     | ItemType            | 工作项的类型              | 0：发起节点/经办节点，2：审批节点，3：抄送节点     |
+| 25     | Originator          | 流程发起人               |                                 |
+| 26     | Approval            | 是否同意                | 1：同意，0：不同意，-1：审批人还未处理/取消节点      |
+| 27     | ItemComment         | 审批意见内容              | 已废弃                             |
+| 28     | Receiptor           | 转交工作的接收人            |                                 |
+| 29     | ActionName          | 用户操作名称              |                                 |
+| 30     | PreActionEventType  | 上一个操作的时间类型          |                                 |
+| 31     | ActionEventType     | 操作事件类型              |                                 |
+| 32     | AllowedTime         | 许可完成时间，到期自动审批       |                                 |
+
+## \[系统-流程步骤表] H\_Token
+
+数据库表名：H\_Token
+
+> 流程每激活一个流程节点，对应此表一条数据
+
+| **序号** | **字段编码**           | **字段释义**    | **备注**                            |
+|--------|--------------------|-------------|-----------------------------------|
+| 1      | ObjectId           | 流程步骤Id      | 主键，流程步骤的唯一标识                      |
+| 2      | TokenId            | 令牌Id        |  该节点激活序号，同一个流程下此字段最大值就代表是最新的节点，可用于查询流程当前节点  |
+| 3      | Activity           | 令牌对应的活动编码   | 即流程设计中的节点编码                       |
+| 4      | Approval           | 审批结果        | 1：同意，0：不同意，-1：审批人还未处理/取消节点        |
+| 5      | SkippedExecution   | 是否跳过的       |                                   |
+| 6      | Exceptional        | 是否出现了异常     |                                   |
+| 7      | Retrievable        | 是否可以被撤回     |                                   |
+| 8      | CreatedTime        | 创建时间        |                                   |
+| 9      | PreTokens          | 前驱的令牌Id     |                                   |
+| 10     | FinishedTime       | 完成时间        |                                   |
+| 11     | State              | 状态          | 0：等待中，1：进行中，2：已完成，3：已取消，6：已转交     |
+| 12     | Participants       | 当前的审批人      | 由于一个节点可以由多个人审批，所以此字段是xml格式的用户Id数组 |
+| 13     | UsedTime           | 使用的时间       | 可通过 UsedTime/10000000 得到秒级单位的时间   |
+| 14     | ParentObjectId     | 流程实例Id      | 对应H\_WorkflowInstance表ObjectId字段   |
+| 15     | ParentPropertyName | 属性名称        |                                   |
+| 16     | ParentIndex        | 对应流程实例中的排序值 |                                   |
+
+## \[系统-审批意见记录表] H\_Comment
+
+数据库表名：H\_Comment
+
+| **序号** | **字段编码**      | **字段释义**      | **备注**                          |
+|--------|--------------------|---------------|---------------------------------|
+| 1      | ObjectId           | 审批意见Id        | 主键，审批意见的唯一标识                    |
+| 2      | SchemaCode         | 表单编码          |                                 |
+| 3      | BizObjectId        | 表单数据Id        | 对应表单表ObjectId字段                 |
+| 4      | InstanceId         | 流程实例Id        | 对应H\_WorkflowInstance表ObjectId字段 |
+| 5      | Activity           | 活动节点编码        | 即流程设计中的节点编码                     |
+| 6      | UserId             | 用户Id          | 对应H\_User表ObjectId字段             |
+| 7      | Delegant           | 委托人           | 暂未使用                            |
+| 8      | UserParentName     | 评论用户部门名称      |                                 |
+| 9      | TokenId            | 令牌Id          |                                 |
+| 10     | Text               | 审批意见          |                                 |
+| 11     | Approval           | 是否审批通过        | 1：同意，0：不同意                      |
+| 12     | CreatedTime        | 评论时间          |                                 |
+| 13     | ModifiedTime       | 最后一次修改意见的时间   |                                 |
+| 14     | ModifiedBy         | 最后一次修改意见的人员id | 对应H\_User表ObjectId字段             |
+| 15     | Signature          | 签名            | 暂未使用                            |
+| 16     | AttachmentIds      | 附件Id          | 此字段是xml格式的附件Id数组                |
+| 17     | WorkItemId         | 任务Id          | 对应H\_WorkItem表ObjectId字段         |
+| 18     | ParentObjectId     | 父对象Id         | 暂未使用                            |
+| 19     | ParentPropertyName | 父对象属性名称       | 暂未使用                            |
+| 20     | ParentIndex        | 父对象索引         | 暂未使用                            |
+
+## \[系统-附件/图片记录表] H\_BizObjectFile
+
+数据库表名：H\_BizObjectFile
+
+| **序号** | **字段编码**           | **字段释义**           | **备注**          |
+|--------|--------------------|--------------------------------------|--------------------------------------|
+| 1      | ObjectId           | 附件/图片Id                           | 主键，附件/图片的唯一标识              |
+| 2      | LastVersion        | 版本                                  |                   |
+| 3      | SchemaCode         | 附件/图片所在主表的表单编码            |                |
+| 4      | ChildSchemaCode    | 如附件/图片控件在子表中，则有子表控件编码                |                |
+| 5      | PropertyName       | 所在表单的附件/图片控件编码，若是子表中的附件/图片，则是子表内控件编码 |               |
+| 6      | BizObjectId        | 所在表单数据Id，若是子表中的附件/图片，则是子表数据Id        |                   |
+| 7      | SourcePropertyName | 源表字段                                 |                                |
+| 8      | SourceBizObjectId  | 源表数据Id                               |                       |
+| 9      | SourceFileId       | 源表附件Id                               |                         |
+| 10     | CreatedBy          | 上传人员Id                               | 对应H\_User表ObjectId字段                        |
+| 11     | ModifiedBy         | 最后修改人员Id                             | 对应H\_User表ObjectId字段                                |
+| 12     | ContentType        | 附件/图片类型              | MIME 类型，[MIME类型列表](https://www.w3school.com.cn/media/media_mimeref.asp) |
+| 13     | ContentLength      | 附件/图片大小                              | 单位：B，除1024得到KB，除1048576得到MB                      |
+| 14     | FileName           | 附件/图片文件名                             | 带文件后缀                                     |
+| 15     | Description        | 对附件/图片的描述                            | 暂未使用                                   |
+| 16     | CreatedTime        | 附件/图片上传时间                            |                                    |
+| 17     | ModifiedTime       | 附件/图片最后修改时间                          |                                            |
+| 18     | FileFlag           | 是否逻辑删除                              |                              |
+| 19     | SortKey            | 排序值                                  | 是附件/图片控件中第几个，从0开始               |
+| 20     | ParentObjectId     | 父对象Id                                | 暂未使用             |
+| 21     | ParentPropertyName | 父对象属性名称                              | 暂未使用                         |
+| 22     | ParentIndex        | 父对象索引                                | 暂未使用                        |
+
+## \[系统-表单信息表] H\_PublishedBizObjectSchema
+
+数据库表名：H\_PublishedBizObjectSchema
+
+| **序号** | **字段编码**           | **字段释义** | **备注**                             |
+|--------|--------------------|----------|------------------------------------|
+| 1      | ObjectId           | 表单信息Id   | 主键，表单信息的唯一标识                       |
+| 2      | SchemaCode         | 表单编码     |                                    |
+| 3      | DisplayName        | 表单展示名称   | 该字段新版已废弃，后续表单名称需从 `Content` 字段中解析获取             |
+| 4      | ChildSchemas       | 子表编码     | 一个表单内可能会有多个子表，所以此字段为xml格式的子表编码数组   |
+| 5      | ReferenceSchemas   | 关联表单编码   | 一个表单内可能会有关联表单，所以此字段为xml格式的关联表单编码数组 |
+| 6      | Content            | 表单结构文档   | 表单结构XML字符串                          |
+| 7      | CreatedTime        | 表单创建时间   |                                    |
+| 8      | ModifiedTime       | 表单最后修改时间 |                                    |
+| 9      | ParentObjectId     | 父对象Id    | 暂未使用                               |
+| 10     | ParentPropertyName | 父对象属性名称  | 暂未使用                               |
+| 11     | ParentIndex        | 父对象索引    | 暂未使用                               |
+
+## \[系统-表单配置表] H\_PublishedFormSetting
+
+数据库表名：H\_PublishedFormSetting
+
+| **序号** | **字段编码**                 | **字段释义**   | **备注**       |
+|--------|--------------------------|------------|--------------|
+| 1      | ObjectId                 | 表单配置Id     | 主键，表单配置的唯一标识 |
+| 2      | SchemaCode               | 表单编码       |              |
+| 3      | DisplayName              | 表单展示名称     |   该字段新版已废弃，请勿使用           |
+| 4      | JavaScript               | 表单设计旧版前端代码  |  目前旧版表单基本已完成升级，后续勿再使用此字段     |
+| 5      | NewJsCode                | 表单设计新版前端代码 | 目前企业基本都处于新版表单了，所以后续用此字段             |
+| 6      | BehindCode               | 表单设计后端代码   |              |
+| 7      | ModifiedTime             | 表单配置最后修改时间 |              |
+| 8      | DesignModeContent        |            |              |
+| 9      | RuntimeContent           |            |              |
+| 10     | FormContent              |            |              |
+| 11     | FormConfigContent        |            |              |
+| 12     | EnableFormSns            |            |              |
+| 13     | EnableTask               |            |              |
+| 14     | EnableLog                |            |              |
+| 15     | PcLayout                 |            |              |
+| 16     | ConfigedExternalForm     |            |              |
+| 17     | EnableExternalForm       |            |              |
+| 18     | EnableReviewExternalForm |            |              |
+| 19     | EnableExternalShare      |            |              |
+| 20     | ExtAttr                  |            |              |
+| 21     | AssociationCodes         |            |              |
+| 22     | FunctionsinBehindCode    |            |              |
+| 23     | Actions                  |            |              |
+| 24     | ParentObjectId           | 父对象Id      | 暂未使用         |
+| 25     | ParentPropertyName       | 父对象属性名称    | 暂未使用         |
+| 26     | ParentIndex              | 父对象索引      | 暂未使用         |
+
+## \[系统-列表配置表] H\_PublishedListViewSetting
+
+数据库表名：H\_PublishedListViewSetting
+
+| **序号** | **字段编码**                 | **字段释义**   | **备注**       |
+|--------|--------------------------|------------|--------------|
+| 1      | ObjectId                 | 列表配置Id     | 主键，列表配置的唯一标识 |
+| 2      | SchemaCode               | 表单编码       |              |
+| 3      | JavaScript               | 列表设计前端代码   | 目前列表前端代码并没有新旧版之分，所以用此字段      |
+| 4      | NewJsCode                | 列表设计新版前端代码 | 暂未使用         |
+| 5      | BehindCode               | 列表设计后端代码   |              |
+| 6      | ModifiedTime             | 列表配置最后修改时间 |              |
+| 7      | IconProperty             | 移动端图标字段    |              |
+| 8      | SortBy                   | 列表排序字段     |              |
+| 9      | SortDirection            | 列表排序方式     |              |
+| 10     | OptionalDisplayMode      |            |              |
+| 11     | WebDefaultDisplayMode    |            |              |
+| 12     | MobileDefaultDisplayMode |            |              |
+| 13     | Selectable               |            |              |
+| 14     | StartTimePropertyName    |            |              |
+| 15     | EndTimePropertyName      |            |              |
+| 16     | DefaultDisplayDimension  |            |              |
+| 17     | DefaultDisplayChildCode  |            |              |
+| 18     | TimeLineaxis             |            |              |
+| 19     | TimeLineSortDirection    |            |              |
+| 20     | FunctionsinBehindCode    |            |              |
+| 21     | Actions                  |            |              |
+| 22     | ParentObjectId           | 父对象Id      | 暂未使用         |
+| 23     | ParentPropertyName       | 父对象属性名称    | 暂未使用         |
+| 24     | ParentIndex              | 父对象索引      | 暂未使用         |
+
+## \[系统-左侧栏目录配置表] H\_FunctionNode
+
+数据库表名：H\_FunctionNode
+
+| **序号** | **字段编码**           | **字段释义**   | **备注** |
+|--------|------------|------------|---------|
+| 1      | ObjectId                 | 节点Id            | 主键，唯一标识 |
+| 2      | Code                     | 节点编码          |  此节点编码可以是：应用编码、分组编码、表单编码、报表编码、仪表盘编码    |
+| 3      | AppCode                  | 节点所在的应用编码 |       |
+| 4      | ParentCode               | 父节点编码         |           |
+| 5      | DisplayName              | 节点名称           |           |
+| 6      | SortKey                  | 排序键             |           |
+| 7      | State                    | 状态             |           |
+| 8      | NodeVisible              | 节点可见状态      |            |
+| 9      | NodeType                 | 节点类型          |           |
+| 10     | IconCss                  | 图标样式          |           |
+| 11     | IconColorIndex           |                  |           |
+| 12     | Url                      |                  |           |
+| 13     | EnableDataAcl            |                  |           |
+| 14     | ParentObjectId           |                  |           |
+| 15     | ParentPropertyName       |                  |           |
+| 16     | ParentIndex              |                  |           |
+| 17     | Summary                  |                  |           |
