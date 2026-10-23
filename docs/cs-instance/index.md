@@ -1,0 +1,250 @@
+---
+url: 'https://h3yunpro.github.io/docs/cs-instance/index.md'
+---
+## H3.IEngine
+
+`H3.IEngine` 是各种管理器的总控引擎类。
+
+### 实例获取方式
+
+* 表单/列表后端代码类的任意事件中，均可以通过 `this.Engine` 获取，或者通过 `this.Request.Engine` 获取
+
+* 定时器类 `OnWork` 事件中，从传入参数 `H3.IEngine engine` 获取
+
+* 自定义接口类 `OnInvoke` 事件中，可以通过 `this.Engine` 获取
+
+### 实例属性
+
+| **属性名**                 | **数据类型**                                      | **说明**                              | **是否开放使用** |
+|-------------------------|-----------------------------------------------|-------------------------------------|---------|
+| BizBus                  | `H3.BizBus.IBizBus`                             | 集成第三方服务                             | ✔       |
+| BizObjectManager        | `H3.DataModel.IBizObjectManager`                | 业务对象数据管理器，用于处理表单数据                  | ✔       |
+| EngineSecret            | `String`                                        | 企业引擎密钥，                              | ✔       |
+| Notifier                | `H3.Notification.INotifier`                     | 通知管理器，用于发送通知                        | ✔       |
+| Organization            | `H3.Organization.IOrganization`                 | 组织结构管理器，用于获取部门/人员/角色等信息             | ✔       |
+| Query                   | `H3.Query`                                      | 数据库查询器，用于执行SQL                      | ✔       |
+| SettingManager          | `H3.Settings.ISettingManager`                   | 配置管理器，用于获取企业配置信息                        | ✘       |
+| TaskManager             | `H3.Task.ITaskManager`                          | 任务管理器，用于给用户发送任务                     | ✔       |
+| TransactionManager      | `H3.Transaction.ITransactionManager`            | 事务管理器，目前无使用用法                       | ✘       |
+| UrgencyManager          | `H3.Workflow.WorkItem.IUrgencyManager`          | 催办管理器，用于获取催办及发送催办消息                 | ✔       |
+| ViewManager             | `H3.SmartForm.IViewManager`          | 表单设计管理器，不推荐使用                       | ✘       |
+| WorkflowInstanceManager | `H3.Workflow.Instance.IWorkflowInstanceManager` | 流程实例管理器，用于流程实例创建、获取、删除              | ✔       |
+| WorkflowTemplateManager | `H3.Workflow.Template.IWorkflowTemplateManager` | 流程设计模板管理器，用于获取流程设计的模板，创建流程实例时需依据此模板 | ✔       |
+| WorkItemManager         | `H3.Workflow.WorkItem.IWorkItemManager`         | 流程项管理器，用于管理具体流程项，使用场景较少            | ✔       |
+
+## H3.DataModel.BizObjectSchema
+
+`H3.DataModel.BizObjectSchema` 是表单结构类，实例属性/方法是关于表单的配置信息（如表单中的控件信息，表单名称等）。
+
+::: warning
+本实例只能用于获取配置信息，不可用于更新与删除表单配置，更新与删除表单应在表单设计页面配置。
+:::
+
+### 实例获取方式
+
+* 表单/列表后端代码类的任意事件中，均可以通过 `this.Request.Schema` 获取（即获取到的是当前表单结构实例）
+
+* 其他位置，或者获取其他表单结构实例，则指定表单编码获取
+
+```cs
+H3.DataModel.BizObjectSchema schema = engine.BizObjectManager.GetPublishedSchema("表单编码");
+```
+
+### 实例属性
+
+| **属性名**      | **数据类型**                       | **释义**                    |
+|--------------|--------------------------------|---------------------------|
+| DisplayName  | String                         | 表单名称                      |
+| FullName     | String                         | 表单名称+表单编码                 |
+| SchemaCode   | String                         | 表单编码                      |
+| TableName    | String                         | 对应数据库中的表名                 |
+| ChildSchemas | H3.DataModel.BizObjectSchema\[] | 若本实例是主表，则此属性有值，为所有的子表结构实例 |
+| Properties   | H3.DataModel.PropertySchema\[]  | 表单内所有字段的结构实例              |
+
+### 常用方法
+
+* `GetChildSchema`：获取子表结构实例，使用示例：`H3.DataModel.BizObjectSchema childSchema = schema.GetChildSchema("子表编码");`
+
+* `PropertyExist`：判断某控件是否在该表单内，使用示例：`bool ex = schema.PropertyExist("控件编码");//true: 存在`
+
+* `GetProperty`：获取表单内控件结构实例，使用示例：`H3.DataModel.PropertySchema pro = schema.GetProperty("控件编码");`
+
+## H3.DataModel.PropertySchema
+
+`H3.DataModel.PropertySchema` 是控件结构类，实例属性/方法是关于控件的配置信息（如控件的名称、类型等）。
+
+::: warning
+本实例只能用于获取配置信息，不可用于更新与删除控件配置，更新与删除控件应在表单设计页面配置。
+:::
+
+### 实例获取方式
+
+获取控件结构之前，一定要获取到表单结构实例，如何获取表单结构实例请参考 [H3.DataModel.BizObjectSchema](/docs/cs-instance/#h3-datamodel-bizobjectschema)
+
+获取指定控件结构实例：
+
+```cs
+H3.DataModel.BizObjectSchema schema = engine.BizObjectManager.GetPublishedSchema("表单编码");
+H3.DataModel.PropertySchema pro = schema.GetProperty("控件编码");
+```
+
+循环获取表单下所有控件结构实例：
+
+```cs
+H3.DataModel.BizObjectSchema schema = engine.BizObjectManager.GetPublishedSchema("表单编码");
+foreach(H3.DataModel.PropertySchema pro in schema.Properties) 
+{
+
+}
+```
+
+### 实例属性
+
+| **属性名**           | **数据类型**                     | **释义**                             |
+|-------------------|------------------------------|------------------------------------|
+| DisplayName       | String                       | 控件名称                               |
+| Name              | String                       | 控件编码                               |
+| DataType          | H3.Data.BizDataType          | 控件类型，该属性数据类型为枚举                    |
+| IsCustom          | Boolean                      | 此属性已废弃，请勿使用                   |
+| IsMappingProperty | Boolean                      | 该控件是否是关联属性控件，true: 关联属性控件          |
+| StorageByteCount  | Int32                        | 该控件占用空间大小                          |
+| MaxLength         | Int32                        | 该控件内容最大长度                          |
+| HideRule          | String                       | 该控件配置的隐藏规则                         |
+| ComputationRule   | String                       | 该控件配置的计算公式                         |
+| ChildSchema       | H3.DataModel.BizObjectSchema | 如果该控件为子表，则该属性值为子表结构实例              |
+
+`H3.Data.BizDataType` 枚举值：
+
+* `H3.Data.BizDataType.ShortString`：表示该控件的值为文本类型
+* `H3.Data.BizDataType.String`：表示该控件的值为文本类型
+* `H3.Data.BizDataType.Int`：表示该控件的值为32位整数类型
+* `H3.Data.BizDataType.Long`：表示该控件的值为64位整数类型
+* `H3.Data.BizDataType.Double`：表示该控件的值为浮点数类型
+* `H3.Data.BizDataType.Bool`：表示该控件的值为布尔类型，即该控件为 是/否 控件
+* `H3.Data.BizDataType.Image`：表示该控件为 图片 控件
+* `H3.Data.BizDataType.File`：表示该控件为 附件 控件
+* `H3.Data.BizDataType.DateTime`：表示该控件为 日期 控件
+* 其他类型略，有需要的可以在后端编辑器中靠代码提示获得
+
+## H3.Data.Filter.Filter
+
+`H3.Data.Filter.Filter` 是筛选器类，用于在批量查询表单数据时进行数据的筛选、分页、排序。
+
+::: warning
+默认情况下，`H3.DataModel.BizObject.GetList` 查询接口每次返回前 1000 条数据，且底层限定每次不会超过1000条（即使设定了超过1000条的范围）。
+:::
+
+### 排序
+
+通过 `AddSortBy` 实现查询结果排序后返回（相当于SQL的 `ORDER BY` 效果）。
+
+该方法需传入两个参数，第一个参数为排序的控件编码，第二个参数为枚举值：
+
+* `H3.Data.Filter.SortDirection.Ascending` 正序排序
+* `H3.Data.Filter.SortDirection.Descending` 倒序排序
+
+使用示例：
+
+```cs
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+filter.AddSortBy("CreatedTime", H3.Data.Filter.SortDirection.Ascending);
+filter.Matcher = andMatcher;
+```
+
+### 分页筛选
+
+当我们想一次性查询返回指定条数数据，或者想查询超过 1000 条数据时，就需要通过分页筛选进行实现了（相当于SQL的 `LIMIT` 效果）。
+通过使用 `FromRowNum` 和 `ToRowNum` 指定起始下标与结束下标实现分页查询：
+
+* `FromRowNum`：起始下标，从 0 开始，结果中包含该下标对应数据
+* `ToRowNum`：结束下标，结果中不包含该下标对应数据
+
+```cs
+//查询数据下标 0-99 的数据（共100条）
+//如需查第二页 100-199 的数据，则 FromRowNum = 100，ToRowNum = 200
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+filter.FromRowNum = 0;
+filter.ToRowNum = 100;
+//由于是分页查询，所以加上按创建时间排序，可以避免某些页中有重复数据
+filter.AddSortBy("CreatedTime", H3.Data.Filter.SortDirection.Descending);
+filter.Matcher = andMatcher;
+```
+
+::: tip
+[分页查询所有数据示例](/docs/tool-function/#后端-通过筛选器分页获取某表单全部业务对象)
+:::
+
+### And/Or 组合示例
+
+实现SQL中的 `WHERE Status = 1` 的筛选效果：
+
+```cs
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+andMatcher.Add(new H3.Data.Filter.ItemMatcher("Status", H3.Data.ComparisonOperatorType.StartWith, H3.DataModel.BizObjectStatus.Effective));
+filter.Matcher = andMatcher;
+```
+
+实现SQL中的 `WHERE Status = 1 AND CreatedTime >= '2023-02-01'` 的筛选效果：
+
+```cs
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+andMatcher.Add(new H3.Data.Filter.ItemMatcher("Status", H3.Data.ComparisonOperatorType.Equal, H3.DataModel.BizObjectStatus.Effective));
+andMatcher.Add(new H3.Data.Filter.ItemMatcher("CreatedTime", H3.Data.ComparisonOperatorType.NotBelow, DateTime.Parse("2023-02-01")));
+filter.Matcher = andMatcher;
+```
+
+实现SQL中的 `WHERE Status = 3 Or F0000001 = '作废'` 的筛选效果：
+
+```cs
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+
+H3.Data.Filter.Or orMatcher = new H3.Data.Filter.Or();
+orMatcher.Add(new H3.Data.Filter.ItemMatcher("Status", H3.Data.ComparisonOperatorType.Equal, H3.DataModel.BizObjectStatus.Canceled));
+orMatcher.Add(new H3.Data.Filter.ItemMatcher("F0000001", H3.Data.ComparisonOperatorType.Equal, "作废"));
+
+andMatcher.Add(orMatcher);
+filter.Matcher = andMatcher;
+```
+
+实现SQL中的 `WHERE CreatedTime >= '2023-02-01' AND ( Status = 3 Or F0000001 = '作废' )` 的筛选效果：
+
+```cs
+H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+andMatcher.Add(new H3.Data.Filter.ItemMatcher("CreatedTime", H3.Data.ComparisonOperatorType.NotBelow, DateTime.Parse("2023-02-01")));
+
+H3.Data.Filter.Or orMatcher = new H3.Data.Filter.Or();
+orMatcher.Add(new H3.Data.Filter.ItemMatcher("Status", H3.Data.ComparisonOperatorType.Equal, H3.DataModel.BizObjectStatus.Canceled));
+orMatcher.Add(new H3.Data.Filter.ItemMatcher("F0000001", H3.Data.ComparisonOperatorType.Equal, "作废"));
+
+andMatcher.Add(orMatcher);
+filter.Matcher = andMatcher;
+```
+
+### H3.Data.ComparisonOperatorType比较器枚举值
+
+| **后端枚举值**                                   | **对应OpenApi LoadBizObjects接口Operator值** | **对应SQL（A为字段，?为筛选值）**     | **释义**                             |
+|---------------------------------------------|-----------------------------------------|---------------------------|------------------------------------|
+| H3.Data.ComparisonOperatorType.Above        | 0                                       | A > ?                     | 大于，用于数值、日期时间类型控件值的比较               |
+| H3.Data.ComparisonOperatorType.NotBelow     | 1                                       | A >= ?                    | 大于等于，用于数值、日期时间类型控件值的比较             |
+| H3.Data.ComparisonOperatorType.Equal        | 2                                       | A = ?                     | 等于，用于文本、数值、日期时间类型控件值的比较            |
+| H3.Data.ComparisonOperatorType.NotAbove     | 3                                       | A <= ?                    | 小于等于，用于数值、日期时间类型控件值的比较             |
+| H3.Data.ComparisonOperatorType.Below        | 4                                       | A < ?                     | 小于，用于数值、日期时间类型控件值的比较               |
+| H3.Data.ComparisonOperatorType.NotEqual     | 5                                       | A != ?                    | 不等于，用于文本、数值、日期时间类型控件值的比较           |
+| H3.Data.ComparisonOperatorType.In           | 6                                       | A in (?, ?)               | 和列表中任意值匹配，用于文本、数值、日期时间类型控件值的比较     |
+| H3.Data.ComparisonOperatorType.NotIn        | 7                                       | A not in (?, ?)           | 不和列表中任意值匹配，用于文本、数值、日期时间类型控件值的比较    |
+| H3.Data.ComparisonOperatorType.Contains     | 8                                       | A like '%?%'              | 文本包含指定字符串，用于文本类型控件值的比较             |
+| H3.Data.ComparisonOperatorType.StartWith    | 13                                      | A like '?%'               | 文本以?开始，用于文本类型控件值的比较                |
+| H3.Data.ComparisonOperatorType.EndWith      | 14                                      | A like '%?'               | 文本以?为结尾，用于文本类型控件值的比较               |
+| H3.Data.ComparisonOperatorType.IsNull       | 18                                      | A is null                 | 判断值为null，可用于任意类型控件值的比较             |
+| H3.Data.ComparisonOperatorType.NotNull      | 19                                      | A is not null             | 判断值不为null，可用于任意类型控件值的比较            |
+| H3.Data.ComparisonOperatorType.IsNone       | 20                                      | A is null or A = ''       | 判断值为null 或者 为空字符串，用于文本、数值类型控件值的比较  |
+| H3.Data.ComparisonOperatorType.NotNone      | 21                                      | A is not null and A != '' | 判断值不为null 且 不为空字符串，用于文本、数值类型控件值的比较 |
+| H3.Data.ComparisonOperatorType.NotStartWith | 22                                      | A not like '?%'           | 文本不以?开始，用于文本类型控件值的比较               |
+| H3.Data.ComparisonOperatorType.NotEndWith   | 23                                      | A not like '%?'           | 文本不以?结尾，用于文本类型控件值的比较               |
+| H3.Data.ComparisonOperatorType.NotContains  | 24                                      | A not like '%?%'          | 文本不包含指定字符串，用于文本类型控件值的比较            |

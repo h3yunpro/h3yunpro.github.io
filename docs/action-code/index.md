@@ -1,0 +1,106 @@
+---
+url: 'https://h3yunpro.github.io/docs/action-code/index.md'
+---
+按钮编码是前后端代码判断用户点击了哪个按钮的依据。
+
+在不同位置中，按钮编码对应的参数名不同：
+
+| 使用位置 | 参数 |
+| --- | --- |
+| 表单前端 `OnValidate` | `actionControl.Action` |
+| 表单后端 `OnSubmit` | `actionName` |
+| 列表前端 `ActionPreDo` | `actionCode` |
+| 列表后端 `OnSubmit` | `actionName` |
+
+## 系统按钮编码
+
+| 按钮名称 | 按钮编码 | 说明 |
+| --- | --- | --- |
+| 暂存 | `Save` | 保存草稿 |
+| 提交 | `Submit` | 提交表单或发起流程 |
+| 同意 | `Submit` | 流程审批同意，与提交共用同一个编码 |
+| 不同意 | `Reject` | 流程审批不同意 |
+| 删除 | `Remove` | 删除当前数据 |
+| 撤回 | `RetrieveInstance` | 撤回流程实例 |
+| 作废 | `CancelInstance` | 作废流程或数据 |
+| 打印 | `Print` | 打印表单 |
+| 二维码 | `ViewQrCode` | 查看二维码 |
+| 全屏 | `FullScreen` | 全屏显示表单 |
+| 关闭 | `Close` | 关闭当前页面 |
+| 编辑 | `Edit` | 进入编辑状态 |
+| 转交 | `Forward` | 转交流程工作项 |
+| 已阅 | `Read` | 标记已阅 |
+
+::: warning
+提交和同意的按钮编码都是 `Submit`。如果需要区分“发起提交”和“审批同意”，通常要结合当前流程状态、当前节点编码或业务数据状态判断，不能只依赖按钮编码。
+:::
+
+## 表单前端判断按钮
+
+在表单前端 `OnValidate` 中，可以通过 `actionControl.Action` 判断当前点击的按钮。
+
+```javascript
+OnValidate: function(actionControl) {
+    if(actionControl.Action == "Submit") {
+        // 点击提交或同意按钮
+    }
+
+    if(actionControl.Action == "Reject") {
+        // 点击不同意按钮
+    }
+
+    return true;
+}
+```
+
+## 表单后端判断按钮
+
+在表单后端 `OnSubmit` 中，可以通过 `actionName` 判断当前点击的按钮。
+
+```cs
+protected override void OnSubmit(string actionName, H3.SmartForm.SmartFormPostValue postValue, H3.SmartForm.SubmitSmartFormResponse response)
+{
+    if(actionName == "Submit")
+    {
+        // 点击提交或同意按钮
+    }
+
+    if(actionName == "Reject")
+    {
+        // 点击不同意按钮
+    }
+
+    base.OnSubmit(actionName, postValue, response);
+}
+```
+
+## 列表前端判断按钮
+
+在列表前端 `ActionPreDo` 中，可以通过 `actionCode` 判断当前点击的按钮。
+
+```javascript
+$.ListView.ActionPreDo = function(actionCode) {
+    if(actionCode == "Remove") {
+        // 点击删除按钮
+    }
+
+    return true;
+};
+```
+
+## 自定义按钮编码
+
+自定义按钮的按钮编码由开发者在按钮属性中配置。
+
+建议使用清晰的英文编码，例如：
+
+| 场景 | 推荐编码 |
+| --- | --- |
+| 批量生成订单 | `CreateOrder` |
+| 同步数据 | `SyncData` |
+| 批量作废 | `BatchCancel` |
+| 导出明细 | `ExportDetail` |
+
+::: tip
+自定义按钮编码建议只使用英文字母和数字，避免使用中文、空格和特殊符号。这样前端、后端、接口参数中都更稳定，也更容易搜索维护。
+:::

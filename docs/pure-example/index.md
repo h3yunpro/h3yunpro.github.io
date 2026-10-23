@@ -1,0 +1,259 @@
+---
+url: 'https://h3yunpro.github.io/docs/pure-example/index.md'
+---
+为快速开发准备，无注释，方便复制后直接粘贴使用。
+
+## 定时器
+
+```cs
+public class MyTest_Timer: H3.SmartForm.Timer
+{
+    public MyTest_Timer() { }
+
+    protected override void OnWork(H3.IEngine engine)
+    {
+        DateTime nowTime = DateTime.Now;
+
+    }
+}
+```
+
+## 自定义接口
+
+```cs
+public class MyApiController: H3.SmartForm.RestApiController
+{
+    public MyApiController(H3.SmartForm.RestApiRequest request): base(request) { }
+    protected override void OnInvoke(string actionName, H3.SmartForm.RestApiResponse response)
+    {
+        try
+        {
+            Dictionary < string, object > resData = null;
+
+            MyApiHelper apiHelper = new MyApiHelper();
+
+            if(actionName == "Test")
+            {
+                string stringValue = this.Request.GetValue<string>("para1", "defaultValue");
+                int intValue = this.Request.GetValue<int>("para2", 0);
+
+                resData = apiHelper.Test(this.Engine, stringValue, intValue);
+            }
+
+            if(resData != null && resData.Count > 0)
+            {
+                foreach(KeyValuePair < string, object > resItem in resData)
+                {
+                    response.ReturnData[resItem.Key] = resItem.Value;
+                }
+            }
+        } catch(Exception ex)
+        {
+            response.Errors.Add(ex.ToString());
+        }
+    }
+}
+
+//此处定义Helper类，是为了方便调试，MyApiController没办法在其他地方调用
+//此处继承H3.SmartForm.Timer，是为了可以使用到JSON序列化与反序列化两个API
+public class MyApiHelper: H3.SmartForm.Timer
+{
+    public MyApiHelper() { }
+    protected override void OnWork(H3.IEngine engine) { }
+
+    public Dictionary < string, object > Test(H3.IEngine engine, string stringValue, int intValue)
+    {
+        Dictionary < string, object > resData = new Dictionary<string, object>();
+        resData["stringValue"] = stringValue;
+        resData["intValue"] = intValue;
+        resData["merge"] = stringValue + intValue;
+        return resData;
+    }
+}
+```
+
+## \[表单]\[后端]去掉弹窗的无用按钮
+
+```cs
+protected override void OnLoad(H3.SmartForm.LoadSmartFormResponse response)
+{
+    base.OnLoad(response);
+
+    if(response.Actions != null)
+    {
+        string[] rmBtnCodes = new string[]{ "Save", "Remove", "Print", "ViewQrCode", "FullScreen", "Close", "SubmitAndAdd"};
+        foreach(string btnCode in rmBtnCodes)
+        {
+            if(response.Actions.ContainsKey(btnCode)) 
+            {
+                response.Actions.Remove(btnCode);
+            }
+        }
+    }
+}
+```
+
+## \[表单]PostForm
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+$.SmartForm.PostForm( "Test_Post", {
+    "orderDate": "2023-01-11"
+}, function( data ) {
+    if( data.Errors && data.Errors.length ) {
+        $.IShowError( "错误", JSON.stringify( data.Errors ) );
+    } else {
+        var result = data.ReturnData;
+
+    }
+}, function( error ) {
+    $.IShowError( "错误", JSON.stringify( error ) );
+}, false );
+```
+
+@tab 后端代码
+
+```cs
+protected override void OnSubmit(string actionName, H3.SmartForm.SmartFormPostValue postValue, H3.SmartForm.SubmitSmartFormResponse response)
+{
+    Test_Post(actionName, this.Request, response);
+    base.OnSubmit(actionName, postValue, response);
+}
+
+public void Test_Post(string actionName, H3.SmartForm.SmartFormRequest request, H3.SmartForm.SubmitSmartFormResponse response)
+{
+    if(actionName != "Test_Post")
+    {
+        return;
+    }
+
+    try
+    {
+        H3.IEngine engine = request.Engine;
+        string currUserId = request.UserContext.UserId;
+
+        string orderDate_Str = request["orderDate"] + string.Empty;
+        if(string.IsNullOrWhiteSpace(orderDate_Str))
+        {
+            throw new Exception("orderDate参数值为空！");
+        }
+        DateTime orderDate = DateTime.Parse(orderDate_Str);
+
+
+        response.ReturnData = new Dictionary<string, object>();
+        response.ReturnData["data"] = "";
+    } catch(Exception ex)
+    {
+        response.Errors.Add(ex.Message);
+    }
+}
+```
+
+:::
+
+## \[列表]Post
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+$.ListView.ActionPreDo = function( actionCode ) {
+
+    if( actionCode == "TestBtn" ) {
+        var maxSelectedCount = 10;//最大选择数量
+
+        var seDatas = $.ListView.GetSelected();
+        if( !seDatas || !seDatas.length ) {
+            $.IShowWarn( "警告", "没有选中任何行" );
+            return false;
+        }
+        if( seDatas.length > maxSelectedCount ) {
+            $.IShowWarn( "警告", "一次批量处理最多" + maxSelectedCount + "条！" );
+            return false;
+        }
+
+        var seIds = [];
+        for( var i = 0;i < seDatas.length;i++ ) {
+            seIds.push( seDatas[ i ][ "ObjectId" ] );
+        }
+
+        $.IShowSuccess( "成功", "系统处理中，请稍候..." );
+        var seIdsJson = JSON.stringify( seIds );
+        $.ListView.Post( actionCode + "_Post", {
+            "seIds": seIdsJson
+        }, function( data ) {
+            if( data.Errors && data.Errors.length ) {
+                $.IShowError( "错误", JSON.stringify( data.Errors ) );
+            } else {
+                $.IShowSuccess( "成功", "系统处理完成！" );
+                $.ListView.RefreshView();
+            }
+        }, function( error ) {
+            $.IShowError( "错误", JSON.stringify( error ) );
+        }, false );
+
+        return false;
+    }
+    
+};
+```
+
+@tab 后端代码
+
+```cs
+protected override void OnSubmit(string actionName, H3.SmartForm.ListViewPostValue postValue, H3.SmartForm.SubmitListViewResponse response)
+{
+    TestBtn_Post(actionName, this.Request, response);
+    base.OnSubmit(actionName, postValue, response);
+}
+
+public void TestBtn_Post(string actionName, H3.SmartForm.ListViewRequest request, H3.SmartForm.SubmitListViewResponse response)
+{
+    if(actionName != "TestBtn_Post")
+    {
+        return;
+    }
+
+    try
+    {
+        H3.IEngine engine = request.Engine;
+        H3.DataModel.BizObjectSchema schema = request.Schema;
+        string currUserId = request.UserContext.UserId;
+
+        string seIds_Str = request["seIds"] + string.Empty;
+        if(string.IsNullOrWhiteSpace(seIds_Str))
+        {
+            throw new Exception("没有选中任何行");
+        }
+        string[] seIds = this.Deserialize<string[]>(seIds_Str);
+        if(seIds == null || seIds.Length == 0)
+        {
+            throw new Exception("没有选中任何行");
+        }
+
+        H3.Data.Filter.Filter filter = new H3.Data.Filter.Filter();
+        H3.Data.Filter.And andMatcher = new H3.Data.Filter.And();
+        andMatcher.Add(new H3.Data.Filter.ItemMatcher("ObjectId", H3.Data.ComparisonOperatorType.In, seIds));
+        filter.Matcher = andMatcher;
+        filter.FromRowNum = 0;
+        filter.ToRowNum = 1000;
+        H3.DataModel.BizObject[] boArray = H3.DataModel.BizObject.GetList(engine, H3.Organization.User.SystemUserId, schema, H3.DataModel.GetListScopeType.GlobalAll, filter);
+        if(boArray == null || boArray.Length != seIds.Length)
+        {
+            throw new Exception("数据加载失败！");
+        }
+
+        response.ReturnData = new Dictionary<string, object>();
+        response.ReturnData["data"] = "";
+    } catch(Exception ex)
+    {
+        response.Errors.Add(ex.Message);
+    }
+}
+```
+
+:::

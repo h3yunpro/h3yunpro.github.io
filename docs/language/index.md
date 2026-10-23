@@ -1,0 +1,17 @@
+---
+url: 'https://h3yunpro.github.io/docs/language/index.md'
+---
+\==氚云== 是一款Web端的 `SaaS`、`aPaaS` 平台，底层架构通过 `.NET core`、`MySQL`、`JavaScript` 开发实现。专业版相对于标准版，解锁了 在线编程、OpenAPI、第三方连接 模块，提供给用户进行二次开发，与第三方平台集成的能力，以满足用户个性化的需求。
+
+因此，在氚云上进行二次开发也需遵循该技术栈。如果你已经是一名 .NET Web 方向的开发者，你可以直接上手氚云，只需要了解氚云特有的api。
+对于其他技术栈的开发者，需学习该技术栈的基本语法后，再上手氚云。
+
+::: tip
+如果你的需求只是集成第三方，且只通过标准OpenApi接口或者配置第三方连接实现，因无需在氚云上写代码，则不要求技术栈。
+:::
+
+## 氚云二开语言版本
+
+* 后端：.NET Framework，版本：`.NET Framework 4.6.2`
+* 前端：JavaScript，版本：`ECMAScript 5 / ECMAScript 2009`
+* 数据库：MySQL，大部分已升级至8.0版本，但建议是执行此语句来验证版本：`SELECT VERSION()`
