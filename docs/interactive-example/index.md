@@ -1,0 +1,388 @@
+---
+url: 'https://h3yunpro.github.io/docs/interactive-example/index.md'
+---
+## \[表单]前端OnLoad事件 BindChange + Post 请求后端
+
+可用位置：✔表单 / ✘列表
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+// 加载事件
+OnLoad: function() {
+	/*
+		本示例实现效果：
+			文本框F0000001 填入员工姓名，自动带出对应的 人员Id 并填充到 人员单选框F0000003 
+		文本框F0000001 是 员工姓名 字段
+		人员单选框F0000003 是 员工 字段
+	*/
+
+	//由于会在回调函数里用到this，而回调函数内直接用this会导致指向错误，所以要在此处先用一个变量存储
+	var that = this;
+
+	//给 文本框F0000001 绑定 值变化BindChange 函数
+	that.F0000001.BindChange( $.IGuid(), function() {
+		//获取 文本框F0000001 的值
+		var userName = that.F0000001.GetValue();
+
+		if( userName ) {
+			//若 文本框F0000001 有值，则把值 异步请求 传给后端查找对应人员Id
+			$.SmartForm.PostForm(
+				"GetUserIdByName_Post",//传给后端的actionName，命名标准：功能名_Post
+
+				//传给后端的数据
+				{
+					"userName": userName
+				},
+
+				//请求成功后，触发本事件
+				function( data ) {
+					if( data.Errors && data.Errors.length ) {//后端通过 response.Errors.Add("异常信息") 或者 异常抛出，在此处接收
+						$.IShowError( "错误", JSON.stringify( data.Errors ) );
+					} else {//后端代码执行无误，在此处接收后端的响应值
+						var result = data.ReturnData;//此值对应后端的 response.ReturnData
+
+						//判断后端是否正确返回了 userId 字段，并且 userId 字段有值
+						if( result && result[ "userId" ] ) {
+							//将 userId 填充到 人员单选框F0000003，至此示例效果实现完成
+							that.F0000003.SetValue( result[ "userId" ] );
+						} else {
+							$.IShowError( "错误", "未匹配到人员Id" );
+							that.F0000003.SetValue( "" );
+						}
+					}
+				},
+
+				//平台底层报错时，触发本事件
+				function( error ) {
+					$.IShowError( "错误", JSON.stringify( error ) );
+				},
+
+				true //true：不阻塞，false：请求过程中阻塞后续代码执行
+			);
+		} else {
+			//若 文本框F0000001 无值，则将 人员单选框F0000003 置空
+			that.F0000003.SetValue( "" );
+		}
+	});
+},
+```
+
+@tab 后端代码
+
+```cs
+protected override void OnSubmit(string actionName, H3.SmartForm.SmartFormPostValue postValue, H3.SmartForm.SubmitSmartFormResponse response)
+{
+	//判断前端传来的actionName
+	if(actionName == "GetUserIdByName_Post")
+	{
+		try 
+		{
+			H3.SmartForm.SmartFormRequest request = this.Request;//取出当前请求对象
+			H3.IEngine engine = request.Engine;//取出引擎实例
+
+			string userName = request["userName"] + string.Empty;//取出前端传来的 userName 参数值
+			if(string.IsNullOrWhiteSpace(userName))//判断 userName 参数值是否为空
+			{
+				//当 userName 参数值为空时，抛出异常
+				throw new Exception("userName参数值异常！");
+			}
+
+			//根据 userName 参数值查询对应的 userId
+			string sql = "SELECT ObjectId FROM H_User WHERE Name = @name; ";
+			List < H3.Data.Database.Parameter > parameters = new List<H3.Data.Database.Parameter>();
+			H3.Data.Database.Parameter param = new H3.Data.Database.Parameter(
+				"@name", //参数名
+				System.Data.DbType.String, //参数值类型
+				userName //参数值    
+			);
+			parameters.Add(param);
+			System.Data.DataTable dt = engine.Query.QueryTable(sql, parameters.ToArray());
+
+			//当 h_user 表查无此用户名时
+			if(dt == null || dt.Rows.Count == 0)
+			{
+				throw new Exception("企业内无“" + userName + "”用户！");
+			}
+
+			//取出userId
+			string userId = dt.Rows[0]["ObjectId"] + string.Empty;
+
+			//初始化响应数据实例（因为response.ReturnData默认值是null，后续要添加响应数据，必须先实例化）
+			response.ReturnData = new Dictionary<string, object>();
+			//将 userId 添加到响应数据实例中
+			response.ReturnData.Add("userId", userId);
+		} catch(Exception ex)
+		{
+			//将 try 中抛出的异常捕获，转换成 response.Errors 响应给前端
+			response.Errors.Add(ex.Message);
+		}
+	}
+
+	//表头按钮与按钮控件点击 都会进入OnSubmit事件，此句代码为默认处理，请勿删除
+	base.OnSubmit(actionName, postValue, response);
+}
+```
+
+:::
+
+## \[表单]前端子表控件值改变时 Post 请求后端
+
+可用位置：✔表单 / ✘列表
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+// 加载事件
+OnLoad: function() {
+	/*
+		本示例实现效果：
+			子表订单控件值改变时，将此值（即订单表的ObjectId）发送给后端，获取该订单的销售数量
+			D278609Fxxx：子表控件编码
+			D278609Fxxx.F0000045：子表内订单控件的编码
+			D278609Fxxx.F0000031：子表内销售数量控件的编码
+	*/
+
+	//由于会在回调函数里用到this，而回调函数内直接用this会导致指向错误，所以要在此处先用一个变量存储
+	var that = this;
+
+	//给子表D278609Fxxx绑定BindChange事件
+	that.D278609Fxxx.BindChange( $.IGuid(), function( data ) {
+		var row = data[ 0 ];
+
+		//由于子表内任何控件值改变都会触发子表的BindChange事件，所以此处需要判断触发本事件的来源是 F0000045 字段（即订单控件）
+		if( row != null && row.DataField == "D278609Fxxx.F0000045" ) {
+			//获取该控件所在的子表行数据Id，通过行和控件编码即可定位到该控件
+			var currentRowId = row.ObjectId;
+
+			//获取订单控件的值
+			var orderId = that.D278609Fxxx.GetCellManager( currentRowId, "D278609Fxxx.F0000045" ).GetValue();
+
+			//获取销售数量控件实例
+			var quanCon = that.D278609Fxxx.GetCellManager( currentRowId, "D278609Fxxx.F0000031" );
+
+			//判断订单控件是否有值
+			if( orderId ) {
+				//通过 $.SmartForm.PostForm 请求后端，并将 orderId 传给后端
+				$.SmartForm.PostForm( "GetDZQuanByOrderId_Post", {
+					"orderId": orderId
+				}, function( data ) {
+					if( data.Errors && data.Errors.length ) {
+						$.IShowError( "错误", JSON.stringify( data.Errors ) );
+					} else {
+						var result = data.ReturnData;
+
+						if( result && result.Quantity ) {
+							//当后端返回了 Quantity 字段数据，则赋值给当前子表行的销售数量控件
+							quanCon.SetValue( result.Quantity );
+						} else {
+							//若后端未返回了 Quantity 字段数据，则设置当前子表行的销售数量值为 0
+							quanCon.SetValue( 0 );
+						}
+					}
+				}, function( error ) {
+					$.IShowError( "错误", JSON.stringify( error ) );
+				}, 
+				true //true：不阻塞，false：请求过程中阻塞后续代码执行
+				);
+			}else{
+				//当订单控件值为空时，设置当前子表行的销售数量值为 0
+				quanCon.SetValue( 0 );
+			}
+		}
+	});
+},
+```
+
+@tab 后端代码
+
+参考上面的 BindChange + Post 请求后端例子
+
+:::
+
+## \[表单]前端按钮控件点击时 Post 请求后端
+
+可用位置：✔表单 / ✘列表
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+// 提交校验
+OnValidate: function( actionControl ) {
+	var that = this;
+
+	//判断按钮编码（即按钮控件编码）
+	if( actionControl.Action == "F0000005" ) {
+		//获取 文本框F0000002 的值，此值为用户填写的用户姓名
+		var userName = that.F0000002.GetValue();
+
+		//将用户姓名传给后端OnSubmit事件，获取对应的UserId
+		$.SmartForm.PostForm(
+			"GetUserIdByName_Post",//传给后端的actionName，命名标准：功能名_Post
+
+			//传给后端的数据
+			{
+				"userName": userName
+			},
+
+			//请求成功后，触发本事件
+			function( data ) {
+				if( data.Errors && data.Errors.length ) {//后端通过 response.Errors.Add("异常信息") 或者 异常抛出，在此处接收
+					$.IShowError( "错误", JSON.stringify( data.Errors ) );
+				} else {//后端代码执行无误，在此处接收后端的响应值
+					var result = data.ReturnData;//此值对应后端的 response.ReturnData
+
+					//判断后端是否正确返回了 userId 字段，并且 userId 字段有值
+					if( result && result[ "userId" ] ) {
+						//将 userId 填充到 人员单选框F0000003，至此示例效果实现完成
+						that.F0000003.SetValue( result[ "userId" ] );
+					} else {
+						$.IShowError( "错误", "未匹配到人员Id" );
+						that.F0000003.SetValue( "" );
+					}
+				}
+			},
+
+			//平台底层报错时，触发本事件
+			function( error ) {
+				$.IShowError( "错误", JSON.stringify( error ) );
+			},
+
+			false //true：不阻塞，false：请求过程中阻塞后续代码执行
+		);
+
+		//阻止按钮的默认请求后端处理
+		return false;
+	}
+
+	return true;
+},
+```
+
+@tab 后端代码
+
+参考上面的 BindChange + Post 请求后端例子
+
+:::
+
+## \[表单]前端Post请求，后端响应多条数据
+
+可用位置：✔表单 / ✘列表
+
+::: tabs
+
+@tab:active 前端代码
+
+```js
+// 加载事件
+OnLoad: function() {
+    /*
+		本示例实现效果：
+			在表单数据新增时，将所有产品信息填充到子表
+		D278209Fct 是 产品信息 子表控件
+	*/
+
+	//由于会在回调函数里用到this，而回调函数内直接用this会导致指向错误，所以要在此处先用一个变量存储
+    var that = this;
+
+    //判断当前是否处于表单新增模式下
+    if( $.SmartForm.ResponseContext.IsCreateMode ) {
+        //获取D278209Fct子表控件实例
+        var proCon = that.D278209Fct;
+
+        //先调用ClearRows函数，清空子表所有行
+        proCon.ClearRows();
+        
+        //Post请求后端，因为是查全部数据，所以无需传参数到后端
+        $.SmartForm.PostForm( "GetAllProductData_Post", { }, function( data ) {
+            if( data.Errors && data.Errors.length ) {
+                $.IShowError( "错误", JSON.stringify( data.Errors ) );
+            } else {
+                var result = data.ReturnData;
+
+                //此处先判断后端是否有返回 proDataList 集合，以及 proDataList 集合内元素个数是否 > 0
+                if( result && result[ "proDataList" ] && result[ "proDataList" ].length ) {
+                    //循环list结果
+                    for( var i = 0;i < result[ "proDataList" ].length;i++ ) {
+                        //拿出本条数据
+                        var proData = result[ "proDataList" ][ i ];
+
+                        //将 产品信息 填充到子表
+                        proCon.AddRow( $.IGuid(), {
+                            "D278209Fct.F0000003": proData[ "proId" ],//产品
+                            "D278209Fct.F0000011": proData[ "proSeqNo" ],//产品号
+                            "D278209Fct.F0000007": proData[ "proUnit" ],//计量单位
+                            "D278209Fct.F0000006": proData[ "proSpec" ]//包装规格
+                        });
+                    }
+                }
+            }
+        }, function( error ) {
+            $.IShowError( "错误", JSON.stringify( error ) );
+        }, 
+		true //true：不阻塞，false：请求过程中阻塞后续代码执行
+		);
+    }
+},
+```
+
+@tab 后端代码
+
+```cs
+protected override void OnSubmit(string actionName, H3.SmartForm.SmartFormPostValue postValue, H3.SmartForm.SubmitSmartFormResponse response)
+{
+	//判断前端传来的actionName
+	if(actionName == "GetAllProductData_Post")
+	{
+		try 
+		{
+			H3.SmartForm.SmartFormRequest request = this.Request;//取出当前请求对象
+			H3.IEngine engine = request.Engine;//取出引擎实例
+
+            //定义要响应给前端的产品数据集合
+            List < Dictionary < string, object >> proDataList = new List<Dictionary<string, object>>();
+
+            //使用sql查询所有生效状态的 产品 表单数据
+			System.Data.DataTable dt = engine.Query.QueryTable("select * from i_D278209Product where Status=1", null);
+            if(dt != null && dt.Rows.Count > 0)
+            {
+                //循环查询结果
+                foreach(System.Data.DataRow row in dt.Rows) 
+                {
+                    //将每一条产品数据 转换成一个 Dictionary < string, object > 类型实例
+                    //Dictionary < string, object >是个字典，可以自定义Key，所以这里将F000000X这种无意义的控件编码，转换成了更方便前端使用的 proId、proName 等名称
+                    Dictionary < string, object > proData = new Dictionary<string, object>();
+                    proData["proId"] = row["ObjectId"] + string.Empty;//产品Id
+                    proData["proName"] = row["F0000001"] + string.Empty;//产品名称
+                    proData["proSeqNo"] = row["SeqNo"] + string.Empty;//产品号
+                    proData["proUnit"] = row["F0000003"] + string.Empty;//计量单位
+                    proData["proSpec"] = row["F0000005"] + string.Empty;//包装规格
+
+                    //将本条产品数据添加到list集合中
+                    proDataList.Add(proData);
+                }
+            }
+
+			//初始化响应数据实例（因为response.ReturnData默认值是null，后续要添加响应数据，必须先实例化）
+			response.ReturnData = new Dictionary<string, object>();
+			//将 所有产品数据的list集合 添加到响应数据实例中
+			response.ReturnData.Add("proDataList", proDataList);
+		} catch(Exception ex)
+		{
+			//将 try 中抛出的异常捕获，转换成 response.Errors 响应给前端
+			response.Errors.Add(ex.Message);
+		}
+	}
+
+	//表头按钮与按钮控件点击 都会进入OnSubmit事件，此句代码为默认处理，请勿删除
+	base.OnSubmit(actionName, postValue, response);
+}
+```
+
+:::

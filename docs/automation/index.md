@@ -1,0 +1,25 @@
+---
+url: 'https://h3yunpro.github.io/docs/automation/index.md'
+---
+本篇文档对代码和自动化混用可能会产生的疑问做个解答。
+
+::: warning
+由于自动化还不是最终版本，所以本结论是依据现下的情况，等新版自动化正式上线后，可能会有调整。所以要保证未来新版自动化上线后，不会产生问题，在表单提交时，代码和自动化建议不要混用（要么全代码实现，要么全自动化实现）。
+:::
+
+## OnSubmit中代码和自动化执行顺序
+
+1. 代码写在 `base.OnSubmit` 上面，则代码先执行，然后 `base.OnSubmit` 中执行自动化
+2. 代码写在 `base.OnSubmit` 下面，则 `base.OnSubmit` 中先执行自动化，然后再执行代码
+
+## OnWorkflowInstanceStateChanged中代码和自动化执行顺序
+
+由于 `OnSubmit` 事件先会比 `OnWorkflowInstanceStateChanged` 触发，所以自动化会先执行
+
+## 代码创建、更新、删除数据是否会触发自动化
+
+会的，前提是满足自动化触发的条件
+
+## 自动化创建、更新、删除数据是否会触发代码
+
+不会，因为代码所在的事件（比如:`OnSubmit`）是需要用户动作才会触发

@@ -1,0 +1,77 @@
+---
+url: 'https://h3yunpro.github.io/docs/sql-example/index.md'
+---
+## 根据表单编码查询表单名称
+
+::: tip
+编码有可能是表单编码，也可能是子表控件编码，所以此处 `schemacode` 和 `childschemas` 两个都判断一遍。
+:::
+
+```sql
+SELECT SchemaCode AS `主表编码`, ChildSchemas AS `子表编码`
+, extractvalue(Content,'/BizObjectSchema/DisplayName') AS `主表名称` 
+FROM H_PublishedBizObjectSchema 
+WHERE SchemaCode = '表单编码' 
+OR ChildSchemas LIKE '%表单编码%'
+```
+
+## 查询表单/列表中编写的前后端代码
+
+表单设计中的自定义代码：
+
+```sql
+SELECT Javascript AS `旧版前端代码`, NewJsCode AS `新版前端代码`, BehindCode AS `后端代码` 
+FROM H_PublishedFormSetting
+WHERE SchemaCode = '表单编码'
+```
+
+列表设计中的自定义代码：
+
+```sql
+SELECT Javascript AS `前端代码`, BehindCode AS `后端代码` 
+FROM H_PublishedListViewSetting
+WHERE SchemaCode = '表单编码'
+```
+
+## 根据代码片段查询所在的表单
+
+::: tip
+此处代码片段可以是类名、方法名等，当不知道类定义在哪个表单中，可通过此方式来查询。
+:::
+
+以表单设计中后端代码片段来查询所在表单：
+
+```sql
+SELECT SchemaCode AS `表单编码`, BehindCode AS `后端代码` 
+FROM H_PublishedFormSetting
+WHERE BehindCode LIKE '%代码片段%'
+```
+
+以列表设计中后端代码片段来查询所在表单：
+
+```sql
+SELECT SchemaCode AS `表单编码`, BehindCode AS `后端代码` 
+FROM H_PublishedListViewSetting
+WHERE BehindCode LIKE '%代码片段%'
+```
+
+## 获取氚云应用在钉钉中的appId
+
+```sql
+SELECT CorpId, 
+extractvalue(Agents, '/ArrayOfDingTalkISVAgent/DingTalkISVAgent/AppId') AS `appId`
+FROM H_DingtalkIsv
+```
+
+## 获取氚云流程表单审批通过时间
+
+```sql
+SELECT
+    date_format(b.FinishTime, '%Y-%m-%d %H:%i:%s') AS `审批通过时间`,
+    Approval `是否最终审批通过`
+FROM
+    i_表单编码 a
+    LEFT JOIN H_WorkflowInstance b ON a.WorkflowInstanceId = b.ObjectId
+WHERE
+    b.Approval = 1
+```

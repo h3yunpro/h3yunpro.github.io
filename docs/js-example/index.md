@@ -1,0 +1,320 @@
+---
+url: 'https://h3yunpro.github.io/docs/js-example/index.md'
+---
+# 前端代码示例
+
+## \[表单]前端实现编辑页编辑后不关闭编辑页
+
+可用位置：✔表单 / ✘列表
+
+表单前端代码
+
+```js
+// 提交后事件
+AfterSubmit: function( action, responseValue ) {
+	///编辑后不 关闭编辑页
+	if( action == "Submit" && $.SmartForm.ResponseContext.BizObjectStatus == 1 ) //数据生效，BizObjectStatus值为 1
+	{
+		$.IShowForm( "D00000xxxx", $.SmartForm.ResponseContext.BizObjectId, null);
+		responseValue.ClosePage = false;
+		responseValue.Refresh = true;
+	}
+}
+```
+
+## \[表单]前端获取/设置控件的只读/隐藏状态
+
+可用位置：✔表单 / ✘列表
+
+表单前端代码：
+
+```js
+// 加载事件
+OnLoad: function() {
+	var that = this;
+
+	var isEdit = that.控件编码.Editable;//获取控件可写状态，true：可写，false：只读
+
+	var isVis = that.控件编码.Visible;//获取控件隐藏状态，true：显示，false：隐藏
+
+	that.控件编码.SetReadonly(true);//设置控件只读
+	that.控件编码.SetReadonly(false);//设置控件可写
+
+	that.控件编码.SetVisible(false);//设置控件隐藏
+	that.控件编码.SetVisible(true);//设置控件显示
+},
+```
+
+## \[表单]前端绑定单行文本控件值改变事件
+
+可用位置：✔表单 / ✘列表
+
+::: warning
+表单3.0中不支持，请停止使用。
+:::
+
+表单前端代码：
+
+```js
+// 加载事件
+OnLoad: function() {
+	/*
+		由于BindChange事件的触发时机是焦点离开再触发，在某些需求中及时度不够，此时可以使用OnTempChange事件。
+		注意：OnTempChange事件只限用于 单行文本、多行文本 两类控件。
+
+		本示例实现效果：
+			在单行文本中，输入任意字符，能立马触发事件，而不是等输入完成焦点离开再触发（示例中 F0000001 为单行文本控件的控件编码）。
+	*/
+    var that = this;
+    that.F0000001.OnTempChange( function() {
+        var v = that.F0000001.GetValue();
+    });
+},
+```
+
+## \[表单]提交前弹出确认框二次确认
+
+可用位置：✔表单 / ✘列表
+
+::: warning
+由于氚云的 `$.IConfirm` 非阻塞函数，所以不能用来作为提交前的二次确认，若确实需要做二次确认功能，需使用js自带的 `confirm` 函数。
+:::
+
+表单前端代码：
+
+```js
+// 提交校验
+OnValidate: function( actionControl ) {
+
+    var that = this;
+
+    //判断用户是否点击的是“提交”按钮
+    if( actionControl.Action == "Submit" ) {
+
+        //弹出确认弹窗，让用户再次确认提交动作
+        if( confirm( "这里是弹窗的内容，确认提交？" ) ) {
+            //用户点击了“确认”，则不做处理，正常执行后续代码
+
+        } else {
+            //用户点击了“取消”，则使用return false中止提交动作
+            return false;
+        }
+    }
+
+    return true;//注意：此句代码勿删，放在OnValidate事件最后，若删除会导致点击提交按钮无反应
+},
+```
+
+## \[表单]前端新增页面去除子表默认空白行
+
+可用位置：✔表单 / ✘列表
+
+```js
+// 加载事件
+OnLoad: function() {
+	var that = this;
+
+	if( $.SmartForm.ResponseContext.IsCreateMode ) {
+		that.子表控件编码.ClearRows();
+	}
+},
+```
+
+## \[表单]前端监听子表内某列控件值变更
+
+```js
+// 加载事件
+OnLoad: function() {
+	var that = this;
+
+	//定义一个前端字符串转数值的函数，以供后续获取数字控件值用
+	function convertNumber( v ) {
+		if( typeof v === "string" ) {
+			if( v && v.length ) {
+				try {
+					return parseFloat( v );
+				} catch( e ) {
+					return 0;
+				}
+			}
+		} else if( typeof v === "number" ) {
+			return v;
+		}
+
+		return 0;
+	}
+
+	//给子表控件绑定BindChange事件（子表内新增行、删除行、编辑控件数据都会触发子表控件的BindChange事件）
+	that.Dxxxxx.BindChange( $.IGuid(), function( data ) {
+		//获取触发本事件的子表数据行
+		var row = data[ 0 ];
+
+		//判断触发本事件的来源是否是 Dxxxxx.F0000003 控件
+		if( row && row.DataField == "Dxxxxx.F0000003" ) {
+			//获取触发本事件的子表数据行ObjectId
+			var currentRowId = row.ObjectId;
+
+			//获取本行数据的 Dxxxxx.F0000003 控件实例（子表内控件在每一行中都有，所以获取时，需要指定 子表数据行ObjectId 和 子表内控件编码）
+			var quantityCon = that.Dxxxxx.GetCellManager( currentRowId, "Dxxxxx.F0000003" );
+
+			//获取到了控件实例，那接下来就可以用控件实例相关的函数了（比如：GetValue、SetValue、ClearItems、AddItem）
+			//获取本行中 Dxxxxx.F0000003 控件的值
+			var quantity = quantityCon.GetValue();
+			//转成Number类型
+			quantity = convertNumber( quantity );
+
+			//获取本行 Dxxxxx.F0000004 控件的值
+			var unitPriceCon = that.Dxxxxx.GetCellManager( currentRowId, "Dxxxxx.F0000004" );
+			var unitPrice = unitPriceCon.GetValue();
+			//转成Number类型
+			unitPrice = convertNumber( unitPrice );
+
+			var amount = quantity * unitPrice;
+
+			//1、通过UpdateRow给本行 Dxxxxx.F0000005、Dxxxxx.F0000006 控件赋值
+			//注意：代码更新子表数据同样会触发子表BindChange事件，请注意循环触发的可能，请不要监听 Dxxxxx.F0000005、Dxxxxx.F0000006 控件
+			that.Dxxxxx.UpdateRow( currentRowId, {
+				"Dxxxxx.F0000005": amount,
+				"Dxxxxx.F0000006": amount
+			});
+
+			//2、也可以用控件SetValue的方式
+			//注意：代码更新子表数据同样会触发子表BindChange事件，请注意循环触发的可能，请不要监听 Dxxxxx.F0000005、Dxxxxx.F0000006 控件
+			var amountCon = that.Dxxxxx.GetCellManager( currentRowId, "Dxxxxx.F0000005" );
+			amountCon.SetValue(amount);
+		}
+
+
+		//判断触发本事件的来源是否是 Dxxxxx.F0000004 控件
+		if( row && row.DataField == "Dxxxxx.F0000004" ) {
+			//业务代码
+		}
+	});
+},
+```
+
+## \[表单]前端子表按钮点击事件
+
+可用位置：✔表单 / ✘列表
+
+```js
+// 加载事件
+OnLoad: function() {
+	/*
+		本示例实现效果：
+			子表D154601Fd2d12b143fae4419a2d3e8380d78ad1b 新增、删除等按钮的事件绑定
+		注：行数据的类型和值请自行通过debugger调试查看，本处不列出
+	*/
+
+	//由于会在回调函数里用到this，而回调函数内直接用this会导致指向错误，所以要在此处先用一个变量存储
+	var that = this;
+
+	//给 子表D154601Fd2d12b143fae4419a2d3e8380d78ad1b 绑定 值变化BindChange 函数
+	that.D154601Fd2d12b143fae4419a2d3e8380d78ad1b.BindChange( $.IGuid(), function( data ) {
+		if( data && data.length >= 2 ) {
+			var btnCode = data[ 1 ];//取得子表按钮代码
+
+			debugger
+
+			if( btnCode == "add" ) {//点击 新增/在上面添加行/在下面添加行 按钮
+				var rowData = data[ 0 ];//所添加的行数据
+			}
+
+			if( btnCode == "delete" ) {//点击 删除 按钮
+				var rowId = data[ 0 ][ "rowId" ];//被删除行的行id，即子表ObjectId
+				var rowData = data[ 2 ];//被删除行的行数据
+			}
+
+			if( btnCode == "copy" ) {//点击 复制 按钮
+				var rowData = data[ 0 ];//通过复制添加的新行数据
+			}
+
+			if( btnCode == "clear" ) {//点击 清空行数据 按钮
+				//空行数据
+			}
+		}
+	});
+},
+```
+
+## \[表单]前端设置子表某些字段不可写
+
+可用位置：✔表单 / ✘列表
+
+表单前端代码
+
+```js
+// 加载事件
+OnLoad: function() {
+	/*
+		本示例实现效果：
+			表单详情页打开时和用户点击新增按钮新增子表数据时，F0000031 和 F0000033 两个子表内的控件不可写
+	*/
+
+	//由于会在回调函数里用到this，而回调函数内直接用this会导致指向错误，所以要在此处先用一个变量存储
+	var that = this;
+
+	//子表编码
+	var childTableCode = "D278609xxx";
+	//要设置为不可写的子表字段编码集合
+	var readonlyFieldCodes = [ "F0000031", "F0000033" ];
+
+	//定义函数，本函数会获取到子表所有行，并按照readonlyFieldCodes集合，将对应子表字段都设置为不可写
+	function setReadonlyToAllRowData() {
+		if( readonlyFieldCodes && readonlyFieldCodes.length ) {
+			//获取子表当前已有的所有数据
+			var rowDatas = that[ childTableCode ].GetValue();
+			if( rowDatas && rowDatas.length ) {
+				//循环子表数据
+				for( var i = 0;i < rowDatas.length;i++ ) {
+					//取出子表行数据Id
+					var rowId = rowDatas[ i ][ "ObjectId" ];
+
+					//循环readonlyFieldCodes，将里面每个子表字段编码对应的字段，设置为不可写
+					for( var j = 0;j < readonlyFieldCodes.length;j++ ) {
+						//此处不能直接用子表字段编码，而需要通过此格式拼接出一个完整路径编码，格式为：子表编码.子表内控件编码
+						//此示例中，该编码结果为：D278609xxx.F0000031  和  D278609xxx.F0000033
+						var fullCode = childTableCode + "." + readonlyFieldCodes[ j ];
+
+						//根据子表行数据Id和字段编码，获取该行的子表控件
+						var con = that[ childTableCode ].GetCellManager( rowId, fullCode );
+						if( con ) {
+							//若控件存在，则调用SetReadonly设置该控件不可写
+							con.SetReadonly( true );
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//执行不可写设置
+	setReadonlyToAllRowData();
+
+	//当子表点击新增时，设置新增行的子表控件不可写，实现方案是给子表绑定BindChange事件，并监听子表新增按钮的点击
+	that[ childTableCode ].BindChange( $.IGuid(), function( data ) {
+		if( data && data.length >= 2 ) {
+			var btnCode = data[ 1 ];//取得子表按钮代码
+
+			//判断用户点击了子表的新增按钮或者复制按钮
+			if( btnCode == "add" || btnCode == "copy" ) {
+				//执行不可写设置
+				setReadonlyToAllRowData();
+			}
+		}
+	});
+},
+```
+
+## \[通用]附件批量下载
+
+可用位置：✔表单 / ✔列表
+
+```js
+//此函数是在表单/列表前端调用
+$.IDownloadAttachments( ["附件Id_1", "附件Id_2" ] );
+```
+
+::: warning
+此函数仅支持浏览器中使用，钉钉工作台、企微工作台不支持。调用后会下载一个zip压缩包，里面包含所有附件。
+:::
